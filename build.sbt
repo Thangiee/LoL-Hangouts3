@@ -44,7 +44,7 @@ lazy val app = project
     ),
     dexInProcess := true,
     extraResDirectories ++= {
-      val layout = baseDirectory.value / "app" / "src" / "main" / "res" / "layout"
+      val layout = baseDirectory.value / "src" / "main" / "res" / "layout"
       Seq(
         layout / "region"
       )
