@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget._
 import com.hanhuy.android.appcompat.extensions._
 import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
+import com.thangiee.lolhangouts3.TypedViewHolder.region_act
 import com.thangiee.lolhangouts3.free.CanStore
 import lolchat.model.Region
 import enrichments._
@@ -14,15 +15,14 @@ import scala.collection.JavaConversions._
 import scala.language.postfixOps
 
 class RegionSelectionAct extends BaseActivity {
-
-  lazy val views: TypedViewHolder.region_act = TypedViewHolder.setContentView(this, TR.layout.region_act)
+  type RootView = LinearLayout
+  lazy val views: region_act = TypedViewHolder.setContentView(this, TR.layout.region_act)
   lazy val toolbar = views.toolbar.rootView
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
 
     PrefStore.run(KVStoreOps.get[RegionItem](RegionItem.key)).fold(println("EMPTY"))(println)
-    setSupportActionBar(toolbar.withWhiteNavArrow)
     getSupportActionBar.setTitle("Region")
     toolbar.navigationOnClick0(finish())
 
@@ -33,8 +33,6 @@ class RegionSelectionAct extends BaseActivity {
     views.recyclerView.setAdapter(adapter.parentType)
 
   }
-
-  def expensiveOp(): Double = new util.Random().nextDouble()
 
   def onRegionItemClick(region: RegionItem): Unit = {
     PrefStore.run(KVStoreOps.put(RegionItem.key, region))

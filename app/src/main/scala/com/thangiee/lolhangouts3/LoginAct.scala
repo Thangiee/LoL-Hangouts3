@@ -2,23 +2,25 @@ package com.thangiee.lolhangouts3
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.RelativeLayout
 import com.thangiee.lolhangouts3.enrichments._
 import com.thangiee.lolhangouts3.free.CanStore
 import lolchat._
 import lolchat.model._
 import upickle.default._
 import com.hanhuy.android.extensions._
+import com.thangiee.lolhangouts3.TypedViewHolder.login_act
 
 import scala.concurrent.duration._
 
 class LoginAct extends BaseActivity {
-  lazy val selectedRegion = PrefStore.run(KVStoreOps.get[RegionItem](RegionItem.key))
-  lazy val views: TypedViewHolder.login_act = TypedViewHolder.setContentView(this, TR.layout.login_act)
-  lazy val toolbar = views.toolbar.rootView
+  type RootView = RelativeLayout
+  lazy val selectedRegion   = PrefStore.run(KVStoreOps.get[RegionItem](RegionItem.key))
+  lazy val views: login_act = TypedViewHolder.setContentView(this, TR.layout.login_act)
+  lazy val toolbar          = views.toolbar.rootView
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
-    setSupportActionBar(toolbar.withWhiteNavArrow)
     getSupportActionBar.setTitle(selectedRegion.map(_.name).getOrElse("Login"))
     toolbar.setNavigationOnClickListener(_ => startActivity(new Intent(this, classOf[RegionSelectionAct])))
 
