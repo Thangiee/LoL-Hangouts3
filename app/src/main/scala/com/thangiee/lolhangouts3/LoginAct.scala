@@ -71,7 +71,7 @@ class LoginAct extends BaseActivity {
 }
 
 object LoginAct {
-  def apply()(implicit ctx: Ctx): Intent = new Intent(ctx.bestAvailable, classOf[LoginAct])
+  def apply()(implicit ctx: Ctx): Intent = new Intent(ctx, classOf[LoginAct])
 }
 
 case class LoginConfig(user: String, passwd: String, offlineLogin: Boolean)

@@ -83,7 +83,7 @@ object RegionItem {
     }
 
   def adapter(implicit ctx: Ctx) =
-    new RecyclerArrayAdapter[Item](ctx.bestAvailable, all) {
+    new RecyclerArrayAdapter[Item](ctx, all) {
       def OnCreateViewHolder(viewGroup: ViewGroup, i: Int): BaseViewHolder[Item] = viewHolder(viewGroup)
     }
 }

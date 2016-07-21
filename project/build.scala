@@ -82,7 +82,7 @@ object Dependencies {
 
   val coreDeps = common
   val riotapiDeps = common ++ testing ++ logback.map(_ % "provided")
-  val androidDeps = common ++ macroid ++ androidSupport ++ lolchat ++ androidLibs ++ logging
+  val androidDeps = common ++ androidSupport ++ lolchat ++ androidLibs ++ logging
 }
 
 object ProguardValues {

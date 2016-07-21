@@ -5,14 +5,14 @@ import android.util.DisplayMetrics
 import android.view.WindowManager
 
 trait Conversions {
-  def r2color(id: Int)(implicit ctx: Ctx): Int = ctx.bestAvailable.getResources.getColor(id)
-  def r2drawable(id: Int)(implicit ctx: Ctx): Drawable = ctx.bestAvailable.getResources.getDrawable(id)
+  def r2color(id: Int)(implicit ctx: Ctx): Int = ctx.getResources.getColor(id)
+  def r2drawable(id: Int)(implicit ctx: Ctx): Drawable = ctx.getResources.getDrawable(id)
 
   implicit class Units[A](v: A)(implicit ctx: Ctx, numeric: Numeric[A]) {
     import Numeric.Implicits.infixNumericOps
 
     protected def displayMetrics(implicit ctx: Ctx) = {
-      val display = ctx.application.getSystemService(Context.WINDOW_SERVICE).asInstanceOf[WindowManager].getDefaultDisplay
+      val display = ctx.getSystemService(Context.WINDOW_SERVICE).asInstanceOf[WindowManager].getDefaultDisplay
       val metrics = new DisplayMetrics
       display.getMetrics(metrics)
       metrics

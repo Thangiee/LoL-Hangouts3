@@ -22,7 +22,7 @@ object enrichments {
     type T = ImageView
 
     def loadImg(url: String, config: DrawableTypeRequest[String] => DrawableRequestBuilder[String])(implicit ctx: Ctx): T = {
-      config(Glide.`with`(ctx.bestAvailable).load(url)).into(img)
+      config(Glide.`with`(ctx).load(url)).into(img)
       img
     }
 
