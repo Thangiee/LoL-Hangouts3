@@ -15,7 +15,7 @@ import scala.concurrent.duration._
 
 class LoginAct extends BaseActivity {
   type RootView = RelativeLayout
-  lazy val selectedRegion   = PrefStore.run(KVStoreOps.get[RegionItem](RegionItem.key))
+  lazy val selectedRegion   = RegionItem.loadSelected
   lazy val views: login_act = TypedViewHolder.setContentView(this, TR.layout.login_act)
   lazy val toolbar          = views.toolbar.rootView
 

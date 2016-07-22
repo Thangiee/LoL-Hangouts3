@@ -22,7 +22,6 @@ class RegionSelectionAct extends BaseActivity {
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
 
-    PrefStore.run(KVStoreOps.get[RegionItem](RegionItem.key)).fold(println("EMPTY"))(println)
     getSupportActionBar.setTitle("Region")
     toolbar.navigationOnClick0(finish())
 
@@ -35,7 +34,7 @@ class RegionSelectionAct extends BaseActivity {
   }
 
   def onRegionItemClick(region: RegionItem): Unit = {
-    PrefStore.run(KVStoreOps.put(RegionItem.key, region))
+    RegionItem.cache(region)
     startActivity(LoginAct())
   }
 
@@ -53,6 +52,10 @@ object RegionItem {
     def storeFmt(value: Item): String = write(value)
     def fetchFmt(string: String): Item = read[Item](string)
   }
+
+  def loadSelected: Option[Item] = PrefStore.run(KVStoreOps.get[RegionItem](RegionItem.key))
+
+  def cache(region: RegionItem) = PrefStore.run(KVStoreOps.put(RegionItem.key, region))
 
   lazy val all = Vector(
     RegionItem(Region.NA, "North America", "na", TR.drawable.ic_na.resid),
