@@ -10,6 +10,7 @@ import com.dd.morphingbutton.impl.LinearProgressButton
 import com.github.florent37.viewanimator.AnimationListener.Update
 import com.github.florent37.viewanimator.ViewAnimator
 import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
+import lolchat.data.Region
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -28,12 +29,12 @@ object enrichments {
 
     def loadImg(url: String)(implicit ctx: Ctx): T = loadImg(url, config = _.centerCrop().crossFade())
 
-    def loadSummIcon(summName: String)(implicit ctx: Ctx): T = {
+    def loadSummIcon(summName: String, region: Region)(implicit ctx: Ctx): T = {
       val fmtName = summName.toLowerCase().replace(" ", "")
       loadImg(
-        url = s"http://avatar.leagueoflegends.com/na/$fmtName.png",
+        url = s"http://avatar.leagueoflegends.com/${region.abbr}/$fmtName.png",
         config = _.centerCrop().crossFade().placeholder(TR.drawable.ic_summ_unknown.value).animate(android.R.anim.fade_in)
-      ) // todo: use correct region
+      )
     }
   }
 
