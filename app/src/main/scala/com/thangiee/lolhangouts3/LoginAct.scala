@@ -39,7 +39,7 @@ class LoginAct extends BaseActivity {
     delay(500.millis)(views.loginBtn.fillProgressBar(0, 37, 370.millis))
     LoLChat.run(login(sess)).fold(failLogin, _ => succLogin())
 
-    def failLogin(chatError: ChatError): Unit = delayRunOnUi(1.second) {
+    def failLogin(chatError: Error): Unit = delayRunOnUi(1.second) {
       List(views.usernameEdit, views.passwordEdit).foreach(_.setError(chatError.msg))
       views.loginBtn.morphToErrorBtn
     }

@@ -8,8 +8,8 @@ import com.hanhuy.android.appcompat.extensions._
 import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
 import com.thangiee.lolhangouts3.TypedViewHolder.region_act
 import com.thangiee.lolhangouts3.free.CanStore
-import lolchat.model.Region
 import enrichments._
+import lolchat.data.Region
 
 import scala.collection.JavaConversions._
 import scala.language.postfixOps
@@ -40,7 +40,7 @@ class RegionSelectionAct extends BaseActivity {
 
 }
 
-case class RegionItem(region: Region, name: String, abbr: String, iconId: Int)
+case class RegionItem(region: Region, name: String, iconId: Int)
 
 object RegionItem {
 
@@ -58,16 +58,16 @@ object RegionItem {
   def cache(region: RegionItem) = PrefStore.run(KVStoreOps.put(RegionItem.key, region))
 
   lazy val all = Vector(
-    RegionItem(Region.NA, "North America", "na", TR.drawable.ic_na.resid),
-    RegionItem(Region.BR, "Brazil", "br", TR.drawable.ic_br.resid),
-    RegionItem(Region.EUNE, "Europe Nordic and East", "eune", TR.drawable.ic_eune.resid),
-    RegionItem(Region.EUW, "Europe West", "euw", TR.drawable.ic_euw.resid),
-    RegionItem(Region.KR, "Korea", "kr", TR.drawable.ic_south_korea.resid),
-    RegionItem(Region.LAN, "Latin America North", "lan", TR.drawable.ic_latamn.resid),
-    RegionItem(Region.LAS, "Latin America South", "las", TR.drawable.ic_latams.resid),
-    RegionItem(Region.OCE, "Oceania", "oce", TR.drawable.ic_oce.resid),
-    RegionItem(Region.RU, "Russia", "ru", TR.drawable.ic_ru.resid),
-    RegionItem(Region.TR, "Turkey", "tr", TR.drawable.ic_tr.resid)
+    RegionItem(Region.NA, "North America", TR.drawable.ic_na.resid),
+    RegionItem(Region.BR, "Brazil", TR.drawable.ic_br.resid),
+    RegionItem(Region.EUNE, "Europe Nordic and East", TR.drawable.ic_eune.resid),
+    RegionItem(Region.EUW, "Europe West", TR.drawable.ic_euw.resid),
+    RegionItem(Region.KR, "Korea", TR.drawable.ic_south_korea.resid),
+    RegionItem(Region.LAN, "Latin America North", TR.drawable.ic_latamn.resid),
+    RegionItem(Region.LAS, "Latin America South", TR.drawable.ic_latams.resid),
+    RegionItem(Region.OCE, "Oceania", TR.drawable.ic_oce.resid),
+    RegionItem(Region.RU, "Russia", TR.drawable.ic_ru.resid),
+    RegionItem(Region.TR, "Turkey", TR.drawable.ic_tr.resid)
   )
 
   private type Item = RegionItem

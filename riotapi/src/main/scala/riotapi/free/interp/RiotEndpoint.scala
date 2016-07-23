@@ -7,6 +7,7 @@ import cats.data.{NonEmptyVector, Xor, XorT}
 import cats.implicits.vectorInstance
 import cats.syntax.all._
 import play.api.libs.json.Json
+import lolchat.data._
 import riotapi._
 import riotapi.free.RiotApiF
 import riotapi.free.RiotApiF._
@@ -32,14 +33,14 @@ case class RiotEndpoint(keys: NonEmptyVector[String], numOfThreads: Int = 8) {
   val leagueVer     = "v2.5"
   val matchVer      = "v2.2"
 
-  def run[A](ops: RiotApiOp[A], region: Region): Response[A] = ops.foldMap(interpreter(region))
+  def run[A](ops: RiotApiOp[A], region: Region): AsyncResult[A] = ops.foldMap(interpreter(region))
 
   def randomKey: String = new Random(ThreadLocalRandom.current()).shuffle(keys.unwrap).head
 
   def baseUrl(region: Region) = s"https://${region.abbr}.api.pvp.net/api/lol/${region.abbr}"
 
-  def interpreter(region: Region) = new (RiotApiF ~> Response) {
-    def call(url: String, params: (String, String)*)(ttl: FiniteDuration): Response[String] = {
+  def interpreter(region: Region) = new (RiotApiF ~> AsyncResult) {
+    def call(url: String, params: (String, String)*)(ttl: FiniteDuration): AsyncResult[String] = {
       val cacheKey = url + params.mkString
       XorT(get[String, NoSerialization](cacheKey).map {
         case Some(cacheHit) => Xor.Right(cacheHit)
@@ -54,20 +55,20 @@ case class RiotEndpoint(keys: NonEmptyVector[String], numOfThreads: Int = 8) {
                 Xor.Right(resp.body)
               } else {
                 val errMsg = Try(Json.parse(resp.body) \ "status" \ "message").getOrElse("") + s":${request.url}"
-                Xor.Left(ApiError(resp.code, errMsg))
+                Xor.Left(Error(resp.code, errMsg))
               }
-            case Failure(err) => Xor.Left(ApiError(500, s"${err.getMessage}:${request.url}"))
+            case Failure(err) => Xor.Left(Error(500, s"${err.getMessage}:${request.url}"))
           }
       })
     }
 
-    def callAndParseResp[A](url: String, params: (String, String)*)(ttl: FiniteDuration)(parser: String => Xor[Throwable, A]): Response[A] =
+    def callAndParseResp[A](url: String, params: (String, String)*)(ttl: FiniteDuration)(parser: String => Xor[Throwable, A]): AsyncResult[A] =
       for {
         json <- call(url, params:_*)(ttl)
-        resp <- Response(parser(json).leftMap(err => ApiError(500, err.getMessage)))
+        resp <- AsyncResult(parser(json).leftMap(err => Error(500, err.getMessage)))
       } yield resp
 
-    override def apply[A](fa: RiotApiF[A]): Response[A] = fa match {
+    override def apply[A](fa: RiotApiF[A]): AsyncResult[A] = fa match {
       case SummonerByName(name)      =>
         callAndParseResp(s"${baseUrl(region)}/$summVer/summoner/by-name/$name")(1.day)(json => parseSummoner(name, json))
 
@@ -80,15 +81,15 @@ case class RiotEndpoint(keys: NonEmptyVector[String], numOfThreads: Int = 8) {
       case ChampsStatsById(id, year) =>
         callAndParseResp(s"${baseUrl(region)}/$statsVer/stats/by-summoner/$id/ranked", "season" -> s"SEASON$year")(20.minutes)(parseChampsStats)
           .recover {
-            case ApiError(404, _) => NonEmptyVector(ChampionStats())
+            case Error(404, _, _) => NonEmptyVector(ChampionStats())
           }
 
       case LeagueEntriesByIds(ids)   =>
         (for {
           json <- call(s"${baseUrl(region)}/$leagueVer/league/by-summoner/${ids.mkString(",")}/entry")(20.minutes)
-          resp <- Response.pure(parseLeagueEntries(ids, json))
+          resp <- AsyncResult.pure(parseLeagueEntries(ids, json))
         } yield resp) recover {
-          case ApiError(404, _) =>
+          case Error(404, _, _) =>
             val league = NonEmptyVector(League())
             ids.map(id => (id, league)).toMap
         }

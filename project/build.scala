@@ -21,8 +21,10 @@ object Dependencies {
 
   lazy val lolchat = Seq(
     "org.igniterealtime.smack" % "smack-android" % "4.1.7",
-    "com.github.thangiee" %% "lol-chat-lib" % "0.3.1.0"
+    "com.github.thangiee" %% "lol-chat-lib" % "0.3.2"
   ).map(_.exclude("xpp3", "xpp3"))
+
+  lazy val lolchatCore = Seq("com.github.thangiee" %% "lol-chat-core" % "0.3.2")
 
   lazy val cats = {
     val ver = "0.6.0"
@@ -63,7 +65,8 @@ object Dependencies {
       "com.github.dmytrodanylyk" % "android-morphing-button" % "98a4986e56",
       "com.pixplicity.easyprefs" % "library" % "1.7",
       "com.github.florent37" % "viewanimator" % "1.0.4",
-      "com.noveogroup.android" % "android-logger" % "1.3.5"
+//      "com.noveogroup.android" % "android-logger" % "1.3.5",
+      aar("com.mikepenz" % "materialdrawer" % "5.3.6")
     )
   }
 
@@ -81,7 +84,7 @@ object Dependencies {
   )
 
   val coreDeps = common
-  val riotapiDeps = common ++ testing ++ logback.map(_ % "provided")
+  val riotapiDeps = common ++ lolchatCore ++ testing ++ logback.map(_ % "provided")
   val androidDeps = common ++ androidSupport ++ lolchat ++ androidLibs ++ logging
 }
 
@@ -150,7 +153,9 @@ object ProguardValues {
     "-keep public enum com.bumptech.glide.load.resource.bitmap.ImageHeaderParser$** {\n    **[] $VALUES;\n    public *;\n}",
 
     // roundedImgV
-    "-dontwarn com.squareup.picasso.**"
+    "-dontwarn com.squareup.picasso.**",
+
+    "-keep class com.noveogroup.android.log.**"
   )
 
 }
