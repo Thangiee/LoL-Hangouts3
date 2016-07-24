@@ -45,6 +45,7 @@ class LoginAct extends BaseActivity {
 
     def succLogin(): Unit = delayRunOnUi(1000.millis) {
       views.loginBtn.fillProgressBar(37, 100, 500.millis)
+      CurrentUserInfo.load(sess) // preload
       delay(1.second)(views.loginBtn.morphToSuccessBtn)
       //todo: go to FL
     }

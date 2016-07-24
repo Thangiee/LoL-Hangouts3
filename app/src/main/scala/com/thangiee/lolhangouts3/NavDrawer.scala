@@ -89,6 +89,12 @@ trait NavDrawer extends BaseActivity {
       profile.withIcon(summIconUrl)
       header.updateProfile(profile)
     })
+
+    LoLChat.run(ops.getAppearance(session)).map {
+      case Online  => runOnUi(showOnlineStatus())
+      case Away    => runOnUi(showAwayStatus())
+      case Offline => runOnUi(showOfflineStatus())
+    }
   }
 
   def handleDrawerItemClick(id: Long): Boolean = {
@@ -132,21 +138,26 @@ trait NavDrawer extends BaseActivity {
           .show()
         keepOpen
       case online.id =>
-        drawer.updateItem(appearanceStatus.withName("Online").withIcon(greenCircle))
+        LoLChat.run(ops.appearOnline(session)).map(_ => runOnUi(showOnlineStatus()))
         drawer.setSelection(selectedDrawer.id)
         keepOpen
       case away.id =>
-        drawer.updateItem(appearanceStatus.withName("Away").withIcon(redCircle))
+        LoLChat.run(ops.appearAway(session)).map(_ => runOnUi(showAwayStatus()))
         drawer.setSelection(selectedDrawer.id)
         keepOpen
       case offline.id =>
-        drawer.updateItem(appearanceStatus.withName("Offline").withIcon(greyCircle))
+        LoLChat.run(ops.appearOffline(session)).map(_ => runOnUi(showOfflineStatus()))
         drawer.setSelection(selectedDrawer.id)
         keepOpen
       case _ => keepOpen
     }
   }
 
+  def showOnlineStatus(): Unit = drawer.updateItem(appearanceStatus.withName("Online").withIcon(greenCircle))
+
+  def showAwayStatus(): Unit = drawer.updateItem(appearanceStatus.withName("Away").withIcon(redCircle))
+
+  def showOfflineStatus(): Unit = drawer.updateItem(appearanceStatus.withName("Offline").withIcon(greyCircle))
 }
 
 object NavDrawer {
