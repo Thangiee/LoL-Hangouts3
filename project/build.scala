@@ -27,7 +27,7 @@ object Dependencies {
   lazy val lolchatCore = Seq("com.github.thangiee" %% "lol-chat-core" % "0.3.2")
 
   lazy val cats = {
-    val ver = "0.6.0"
+    val ver = "0.6.1"
     Seq(
       "org.typelevel" %% "cats-macros" % ver,
       "org.typelevel" %% "cats-kernel" % ver,
