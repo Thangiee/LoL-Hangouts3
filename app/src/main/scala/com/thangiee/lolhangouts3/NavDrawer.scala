@@ -116,6 +116,7 @@ trait NavDrawer extends BaseActivity {
         keepOpen
       case logout.id =>
         drawer.setSelection(selectedDrawer.id)
+        LoLChat.run(ops.logout(session)).map(_ => runOnUi { finish(); startActivity(LoginAct()) })
         keepOpen
       case statusMsg.id =>
         drawer.setSelection(selectedDrawer.id)
