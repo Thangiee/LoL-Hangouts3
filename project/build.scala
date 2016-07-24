@@ -66,7 +66,8 @@ object Dependencies {
       "com.pixplicity.easyprefs" % "library" % "1.7",
       "com.github.florent37" % "viewanimator" % "1.0.4",
 //      "com.noveogroup.android" % "android-logger" % "1.3.5",
-      aar("com.mikepenz" % "materialdrawer" % "5.3.6")
+      aar("com.mikepenz" % "materialdrawer" % "5.3.6"),
+      "com.afollestad.material-dialogs" % "core" % "0.8.6.2"
     )
   }
 
@@ -115,7 +116,8 @@ object ProguardValues {
     "scalacache",
     "android.support",
     "com.bumptech",
-    "com.typesafe"
+    "com.typesafe",
+    "com.afollestad"
   )
 
   val options = Seq(

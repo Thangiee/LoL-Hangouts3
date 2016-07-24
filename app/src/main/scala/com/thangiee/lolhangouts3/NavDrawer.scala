@@ -7,6 +7,8 @@ import android.support.v7.widget.RecyclerView.ViewHolder
 import android.view.View
 import android.widget.ImageView
 import cats.implicits.futureInstance
+import com.afollestad.materialdialogs.{DialogAction, MaterialDialog}
+import com.afollestad.materialdialogs.MaterialDialog.{InputCallback, SingleButtonCallback}
 import com.bumptech.glide.Glide
 import com.mikepenz.materialdrawer.model._
 import com.mikepenz.materialdrawer.model.interfaces.{IDrawerItem, IProfile}
@@ -14,6 +16,7 @@ import com.mikepenz.materialdrawer.util.{AbstractDrawerImageLoader, DrawerImageL
 import com.mikepenz.materialdrawer.{AccountHeader, AccountHeaderBuilder, Drawer, DrawerBuilder}
 import com.thangiee.lolhangouts3.NavDrawer._
 import enrichments._
+import lolchat.{LoLChat, ops}
 import lolchat.model._
 
 trait NavDrawer extends BaseActivity {
@@ -109,8 +112,24 @@ trait NavDrawer extends BaseActivity {
         drawer.setSelection(selectedDrawer.id)
         keepOpen
       case statusMsg.id =>
-      // TODO: show dialog
         drawer.setSelection(selectedDrawer.id)
+        new MaterialDialog.Builder(ctx)
+          .title("Set Status Message")
+          .positiveText("Update")
+          .negativeText("Cancel")
+          .input("Enter new status message", "", new InputCallback {
+            def onInput(materialDialog: MaterialDialog, charSequence: CharSequence): Unit = {}
+          })
+          .onPositive((dialog: MaterialDialog, _: DialogAction) => {
+            LoLChat.run(ops.modifyProfile(_.copy(statusMsg = dialog.getInputEditText.txt))(session)).map { p =>
+              CurrentUserInfo.saveStatusMsg(p.statusMsg, session)
+              runOnUi {
+                profile.withEmail(p.statusMsg)
+                header.updateProfile(profile)
+              }
+            }
+          })
+          .show()
         keepOpen
       case online.id =>
         drawer.updateItem(appearanceStatus.withName("Online").withIcon(greenCircle))
