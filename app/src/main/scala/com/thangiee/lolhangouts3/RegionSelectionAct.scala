@@ -7,9 +7,9 @@ import android.widget._
 import com.hanhuy.android.appcompat.extensions._
 import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
 import com.thangiee.lolhangouts3.TypedViewHolder.region_act
-import com.thangiee.lolhangouts3.free.CanStore
 import enrichments._
 import lolchat.data.Region
+import play.api.libs.json.Json
 
 import scala.collection.JavaConversions._
 import scala.language.postfixOps
@@ -46,12 +46,8 @@ object RegionItem {
 
   val key = "RO291i43bN"
 
-  import upickle.default._
-  implicit val pkl = upickle.default.macroRW[RegionItem]
-  implicit val canStore: CanStore[Item] = new CanStore[RegionItem] {
-    def storeFmt(value: Item): String = write(value)
-    def fetchFmt(string: String): Item = read[Item](string)
-  }
+  implicit val regionFmt = Json.format[Region]
+  implicit val regionItemFmt = Json.format[RegionItem]
 
   def loadSelected: Option[Item] = PrefStore.run(KVStoreOps.get[RegionItem](RegionItem.key))
 

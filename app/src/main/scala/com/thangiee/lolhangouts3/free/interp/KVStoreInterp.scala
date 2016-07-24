@@ -5,9 +5,9 @@ import com.pixplicity.easyprefs.library.Prefs
 import com.thangiee.lolhangouts3.KVStore
 import com.thangiee.lolhangouts3.free.KVStoreA
 import com.thangiee.lolhangouts3.free.KVStoreA.{Delete, Get, Put}
+import play.api.libs.json.{Json, Reads}
 
 import scala.language.higherKinds
-import scala.util.Try
 
 trait KVStoreInterp[M[_]] {
   type Interpreter = (KVStoreA ~> M)
@@ -18,9 +18,9 @@ trait KVStoreInterp[M[_]] {
 object PrefStore extends KVStoreInterp[Id] {
   val interpreter: Interpreter = new Interpreter {
     def apply[A](fa: KVStoreA[A]): Id[A] = fa match {
-      case Get(key, canStore)        => Try(canStore.fetchFmt(Prefs.getString(key, ""))).toOption
-      case Put(key, value, canStore) => Prefs.putString(key, canStore.storeFmt(value))
-      case Delete(key)               => Prefs.remove(key)
+      case Get(key, fmt)        => Json.parse(Prefs.getString(key, "{}")).asOpt[A](fmt.asInstanceOf[Reads[A]])
+      case Put(key, value, fmt) => Prefs.putString(key, Json.toJson(value)(fmt).toString())
+      case Delete(key)          => Prefs.remove(key)
     }
   }
 }

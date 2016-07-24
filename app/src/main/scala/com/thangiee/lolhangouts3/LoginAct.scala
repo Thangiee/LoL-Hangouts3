@@ -4,12 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.RelativeLayout
 import com.thangiee.lolhangouts3.enrichments._
-import com.thangiee.lolhangouts3.free.CanStore
 import lolchat._
 import lolchat.model._
-import upickle.default._
 import com.hanhuy.android.extensions._
 import com.thangiee.lolhangouts3.TypedViewHolder.login_act
+import play.api.libs.json.{Format, Json}
 
 import scala.concurrent.duration._
 
@@ -80,9 +79,5 @@ case class LoginConfig(user: String, passwd: String, offlineLogin: Boolean)
 
 object LoginConfig {
   val key = "4474d03OEG"
-  implicit val pkl = upickle.default.macroRW[LoginConfig]
-  implicit val canStore: CanStore[LoginConfig] = new CanStore[LoginConfig] {
-    def storeFmt(value: LoginConfig): String = write(value)
-    def fetchFmt(string: String): LoginConfig = read[LoginConfig](string)
-  }
+  implicit val loginConfigFmt : Format[LoginConfig] = Json.format[LoginConfig]
 }
