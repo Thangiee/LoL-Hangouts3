@@ -2,18 +2,20 @@ package com.thangiee.lolhangouts3
 
 import android.content.Intent
 import android.os.Bundle
+import android.support.v7.app.ActionBar
 import android.support.v7.widget.{LinearLayoutManager, Toolbar}
-import android.view.ViewGroup
-import android.widget.{LinearLayout, TextView}
+import android.view.{View, ViewGroup}
+import android.widget.AdapterView.OnItemSelectedListener
+import android.widget.{AdapterView, LinearLayout, TextView}
 import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
 import com.jude.easyrecyclerview.decoration.DividerDecoration
 import com.makeramen.roundedimageview.RoundedImageView
 import com.thangiee.lolhangouts3.NavDrawer.DrawerItem
-import com.thangiee.lolhangouts3.TypedViewHolder.friend_list_act
+import com.thangiee.lolhangouts3.TypedViewHolder._
+import com.thangiee.lolhangouts3.enrichments._
 import lolchat._
 import lolchat.data.Region
 import lolchat.model._
-import enrichments._
 
 import scala.collection.JavaConversions._
 
@@ -24,13 +26,31 @@ class FriendListAct extends SessionAct with NavDrawer {
 
   val selectedDrawer: DrawerItem = NavDrawer.friendList
 
-  lazy val friendListAdapter = FriendItem.adapter(session.region)
+  lazy val friendListAdapter  = FriendItem.adapter(session.region)
+  lazy val friendGroupAdapter = MaterialSpinnerAdapter(Seq("All", "Online", "Offline"))
+
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
 
+    val friendGroupSpinner: toolbar_spinner =
+      TypedViewHolder.inflate(getLayoutInflater, TR.layout.toolbar_spinner, toolbar, attach = false)
+
+    // setup the spinner in the toolbar to filter friend list by groups
+    val lp = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+    toolbar.addView(friendGroupSpinner.rootView, lp)
+
+    LoLChat.run(groupNames(session)).map(groups => friendGroupAdapter.addItems(groups.filter(_ != "**Default")))
+
+    friendGroupSpinner.spinner +
+      (_.setAdapter(friendGroupAdapter)) +
+      (_.setOnItemSelectedListener(new OnItemSelectedListener {
+        def onNothingSelected(adapterView: AdapterView[_]): Unit = {}
+        def onItemSelected(a: AdapterView[_], v: View, position :Int,  l :Long): Unit =
+          refreshFriendList(friendGroupAdapter.getItem(position))
+      }))
+
     val divider = new DividerDecoration(TR.color.divider.value, 1.dp, 72.dp, 0)
-    divider.setDrawLastItem(false)
 
     views.recyclerView +
       (_.setLayoutManager(new LinearLayoutManager(this))) +
@@ -49,10 +69,17 @@ class FriendListAct extends SessionAct with NavDrawer {
     stopAllSessionStreams()
   }
 
-  def refreshFriendList(): Unit = {
+  def refreshFriendList(groupFilter: String = "all"): Unit = {
     LoLChat.run(friends(session)).map(fs => runOnUi {
+      val filteredFriends = groupFilter.toLowerCase() match {
+        case "all"     => fs
+        case "online"  => fs.filter(_.isOnline)
+        case "offline" => fs.filter(!_.isOnline)
+        case group     => fs.filter(_.groupName.map(_.toLowerCase).contains(group))
+      }
+
       friendListAdapter.clear()
-      friendListAdapter.addAll(fs.sortBy(f => (!f.isOnline, f.name)))
+      friendListAdapter.addAll(filteredFriends.sortBy(f => (!f.isOnline, f.name)))
       friendListAdapter.notifyDataSetChanged()
     })
   }
