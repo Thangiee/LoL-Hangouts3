@@ -45,7 +45,9 @@ class LoginAct extends BaseActivity {
   def attemptLogin(sess: Session): Unit = {
     views.loginBtn.morphToProgress(TR.color.md_grey_300.value, TR.color.md_light_blue_500.value, 5, 300, 10, 500)
     delay(500.millis)(views.loginBtn.fillProgressBar(0, 37, 370.millis))
-    LoLChat.run(login(sess)).fold(failLogin, _ => succLogin())
+
+    val loginOp = if (views.offlineLoginSwitch.isChecked) offlineLogin else login
+    LoLChat.run(loginOp(sess)).fold(failLogin, _ => succLogin())
 
     def failLogin(chatError: Error): Unit = delayRunOnUi(1.second) {
       List(views.usernameEdit, views.passwordEdit).foreach(_.setError(chatError.msg))
