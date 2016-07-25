@@ -87,21 +87,22 @@ object FriendItem {
 
         if (friend.isOnline) {
           friend.chatMode match {
-            case Chat => statusTv + (_.setText("Online")) + (_.setTextColor(TR.color.md_green_500.value))
-            case AFK  => statusTv + (_.setText("Away")) + (_.setTextColor(TR.color.md_red_500.value))
+            case Chat => statusTv.textWithColor("Online", TR.color.md_green_500)
+            case AFK  => statusTv.textWithColor("Away", TR.color.md_red_500)
             case Busy =>
+              val orangeTxt = (txt: String) => (tv: TextView) => tv.textWithColor(txt, TR.color.md_orange_500)
               friend.gameStatus match {
                 case Some("inGame") =>
                   val gameTime = Math.round((System.currentTimeMillis() - friend.gameStartTime.getOrElse(0L)) / 60000)
-                  statusTv + (_.setText(s"In Game: ${friend.selectedChamp.getOrElse("???")} ($gameTime mins)"))
-                case Some("championSelect") => statusTv + (_.setText("Champion Selection"))
-                case Some("inQueue")        => statusTv + (_.setText("In Queue"))
-                case Some(other)            => statusTv + (_.setText(other))
-                case None                   => statusTv + (_.setText("Busy"))
+                  statusTv + orangeTxt(s"In Game: ${friend.selectedChamp.getOrElse("???")} ($gameTime mins)")
+                case Some("championSelect") => statusTv + orangeTxt("Champion Selection")
+                case Some("inQueue")        => statusTv + orangeTxt("In Queue")
+                case Some(other)            => statusTv + orangeTxt(other)
+                case None                   => statusTv + orangeTxt("Busy")
               }
           }
         } else {
-          statusTv + (_.setText("Offline")) + (_.setTextColor(TR.color.md_grey_500.value))
+          statusTv.textWithColor("Offline", TR.color.md_grey_500)
         }
 
       }

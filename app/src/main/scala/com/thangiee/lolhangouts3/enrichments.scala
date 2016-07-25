@@ -3,7 +3,7 @@ package com.thangiee.lolhangouts3
 import android.support.v7.widget.RecyclerView.Adapter
 import android.support.v7.widget.Toolbar
 import android.view.View
-import android.widget.{EditText, ImageView}
+import android.widget.{EditText, ImageView, TextView}
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.{DrawableRequestBuilder, DrawableTypeRequest, Glide}
 import com.dd.morphingbutton.MorphingButton
@@ -41,6 +41,11 @@ object enrichments {
           .diskCacheStrategy(DiskCacheStrategy.NONE)
       )
     }
+  }
+
+  implicit class RichTextView(val tv: TextView) extends AnyVal {
+    def textWithColor(txt: CharSequence, color: TypedRes[TypedResource.ResColor])(implicit ctx: Ctx) =
+      tv + (_.setText(txt)) + (_.setTextColor(color.value))
   }
 
   implicit class RichEditText(val img: EditText) extends AnyVal {
