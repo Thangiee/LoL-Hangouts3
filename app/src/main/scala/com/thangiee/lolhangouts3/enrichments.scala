@@ -16,7 +16,8 @@ import scala.concurrent.duration.FiniteDuration
 
 object enrichments {
 
-  implicit class RichView(val v: View) extends AnyVal {
+  implicit class RichView[V <: View](val v: V) extends AnyVal {
+    def + [A](fn: V => A): V = { fn(v); v }
   }
 
   implicit class RichImgView(val img: ImageView) extends AnyVal {

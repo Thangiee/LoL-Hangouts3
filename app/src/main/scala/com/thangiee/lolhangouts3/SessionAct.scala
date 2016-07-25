@@ -7,7 +7,7 @@ import lolchat.model.Session
 
 trait SessionAct extends BaseActivity {
 
-  def session: Session =
+  val session: Session =
     (for {
       config  <- LoginConfig.load
       session <- LoLChat.findSession(sess => sess.user == config.user)
@@ -39,6 +39,17 @@ trait SessionAct extends BaseActivity {
 
   override def onPause(): Unit = {
     super.onPause()
+  }
+
+  override def onDestroy(): Unit = {
+    super.onDestroy()
+    stopAllSessionStreams()
+  }
+
+  def stopAllSessionStreams(): Unit = {
+    session.msgStream.clear()
+    session.connectionEventStream.clear()
+    session.friendListStream.clear()
   }
 }
 
