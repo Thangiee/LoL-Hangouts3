@@ -10,6 +10,7 @@ import cats.implicits.futureInstance
 import com.afollestad.materialdialogs.{DialogAction, MaterialDialog}
 import com.afollestad.materialdialogs.MaterialDialog.{InputCallback, SingleButtonCallback}
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.mikepenz.materialdrawer.model._
 import com.mikepenz.materialdrawer.model.interfaces.{IDrawerItem, IProfile}
 import com.mikepenz.materialdrawer.util.{AbstractDrawerImageLoader, DrawerImageLoader}
@@ -77,7 +78,8 @@ trait NavDrawer extends SessionAct {
     drawer.setSelection(selectedDrawer.id)
 
     DrawerImageLoader.init(new AbstractDrawerImageLoader {
-      override def set(imageView: ImageView, uri: Uri, placeholder: Drawable): Unit = imageView.loadImg(uri.toString)
+      override def set(imageView: ImageView, uri: Uri, placeholder: Drawable): Unit =
+        imageView.loadImg(uri.toString, config = _.diskCacheStrategy(DiskCacheStrategy.NONE))
       override def cancel(imageView: ImageView): Unit = Glide.clear(imageView)
     })
 

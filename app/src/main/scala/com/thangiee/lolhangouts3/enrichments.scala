@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView.Adapter
 import android.support.v7.widget.Toolbar
 import android.view.View
 import android.widget.{EditText, ImageView}
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.{DrawableRequestBuilder, DrawableTypeRequest, Glide}
 import com.dd.morphingbutton.MorphingButton
 import com.dd.morphingbutton.impl.LinearProgressButton
@@ -34,7 +35,10 @@ object enrichments {
       val fmtName = summName.toLowerCase().replace(" ", "")
       loadImg(
         url = s"http://avatar.leagueoflegends.com/${region.abbr}/$fmtName.png",
-        config = _.centerCrop().crossFade().placeholder(TR.drawable.ic_summ_unknown.value).animate(android.R.anim.fade_in)
+        config = _.centerCrop().crossFade()
+          .placeholder(TR.drawable.ic_summ_unknown.value)
+          .animate(android.R.anim.fade_in)
+          .diskCacheStrategy(DiskCacheStrategy.NONE)
       )
     }
   }
