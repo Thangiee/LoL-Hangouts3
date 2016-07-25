@@ -30,6 +30,8 @@
         </activity>
 
         <activity android:name=".RegionSelectionAct"/>
+        <activity android:name=".FriendListAct"
+                  android:launchMode="singleTop"/>
 
     </application>
 

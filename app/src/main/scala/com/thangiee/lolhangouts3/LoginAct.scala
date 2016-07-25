@@ -3,11 +3,12 @@ package com.thangiee.lolhangouts3
 import android.content.Intent
 import android.os.Bundle
 import android.widget.RelativeLayout
+import com.afollestad.materialdialogs.MaterialDialog
+import com.hanhuy.android.extensions._
+import com.thangiee.lolhangouts3.TypedViewHolder.login_act
 import com.thangiee.lolhangouts3.enrichments._
 import lolchat._
 import lolchat.model._
-import com.hanhuy.android.extensions._
-import com.thangiee.lolhangouts3.TypedViewHolder.login_act
 import play.api.libs.json.{Format, Json}
 
 import scala.concurrent.duration._
@@ -22,6 +23,14 @@ class LoginAct extends BaseActivity {
     super.onCreate(savedInstanceState)
     getSupportActionBar.setTitle(selectedRegion.map(_.name).getOrElse("Login"))
     toolbar.setNavigationOnClickListener(_ => startActivity(new Intent(this, classOf[RegionSelectionAct])))
+
+    Option(getIntent.getStringExtra("errMsg")).foreach(errMsg =>
+      new MaterialDialog.Builder(ctx)
+        .title("Error")
+        .content(errMsg)
+        .positiveText("Ok")
+        .show()
+    )
 
     selectedRegion match {
       case Some(regionItem) =>
@@ -47,13 +56,13 @@ class LoginAct extends BaseActivity {
       views.loginBtn.fillProgressBar(37, 100, 500.millis)
       CurrentUserInfo.load(sess) // preload
       delay(1.second)(views.loginBtn.morphToSuccessBtn)
-      //todo: go to FL
+      delay(1.5.seconds) { startActivity(FriendListAct()); finish() }
     }
   }
 
   override def onResume(): Unit = {
     super.onResume()
-    PrefStore.run(KVStoreOps.get[LoginConfig](LoginConfig.key)).foreach(config => {
+    LoginConfig.load.foreach(config => {
       views.usernameEdit.setText(config.user)
       views.passwordEdit.setText(config.passwd)
       views.savePasswdSwitch.setChecked(config.passwd.nonEmpty)
@@ -68,12 +77,13 @@ class LoginAct extends BaseActivity {
       if (views.savePasswdSwitch.isChecked) views.passwordEdit.txt else "",
       views.offlineLoginSwitch.isChecked
     )
-    PrefStore.run(KVStoreOps.put(LoginConfig.key, config))
+    LoginConfig.save(config)
   }
 }
 
 object LoginAct {
   def apply()(implicit ctx: Ctx): Intent = new Intent(ctx, classOf[LoginAct])
+  def apply(errMsg: String)(implicit ctx: Ctx): Intent = new Intent(ctx, classOf[LoginAct]).putExtra("errMsg", errMsg)
 }
 
 case class LoginConfig(user: String, passwd: String, offlineLogin: Boolean)
@@ -81,4 +91,7 @@ case class LoginConfig(user: String, passwd: String, offlineLogin: Boolean)
 object LoginConfig {
   val key = "4474d03OEG"
   implicit val loginConfigFmt : Format[LoginConfig] = Json.format[LoginConfig]
+
+  def save(config: LoginConfig) = PrefStore.run(KVStoreOps.put(LoginConfig.key, config))
+  def load: Option[LoginConfig] = PrefStore.run(KVStoreOps.get[LoginConfig](LoginConfig.key))
 }

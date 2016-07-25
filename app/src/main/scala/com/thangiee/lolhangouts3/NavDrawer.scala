@@ -19,9 +19,8 @@ import enrichments._
 import lolchat.{LoLChat, ops}
 import lolchat.model._
 
-trait NavDrawer extends BaseActivity {
+trait NavDrawer extends SessionAct {
 
-  def session: Session
   def selectedDrawer: DrawerItem
 
   private lazy val profile  = new ProfileDrawerItem().withName("Loading...").withEmail("Loading...").withIcon(R.drawable.ic_summ_unknown)
