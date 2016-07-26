@@ -67,7 +67,8 @@ object Dependencies {
       "com.github.florent37" % "viewanimator" % "1.0.4",
 //      "com.noveogroup.android" % "android-logger" % "1.3.5",
       aar("com.mikepenz" % "materialdrawer" % "5.3.6"),
-      "com.afollestad.material-dialogs" % "core" % "0.8.6.2"
+      "com.afollestad.material-dialogs" % "core" % "0.8.6.2",
+      "com.gordonwong" % "material-sheet-fab" % "1.2.1"
     )
   }
 
@@ -157,7 +158,9 @@ object ProguardValues {
     // roundedImgV
     "-dontwarn com.squareup.picasso.**",
 
-    "-keep class com.noveogroup.android.log.**"
+    "-keep class com.noveogroup.android.log.**",
+
+    "-keep class io.codetail.animation.arcanimator.** { *; }"
   )
 
 }

@@ -6,7 +6,8 @@ import android.support.v7.app.ActionBar
 import android.support.v7.widget.{LinearLayoutManager, Toolbar}
 import android.view.{View, ViewGroup}
 import android.widget.AdapterView.OnItemSelectedListener
-import android.widget.{AdapterView, LinearLayout, TextView}
+import android.widget.{AdapterView, LinearLayout, RelativeLayout, TextView}
+import com.gordonwong.materialsheetfab.MaterialSheetFab
 import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
 import com.jude.easyrecyclerview.decoration.DividerDecoration
 import com.makeramen.roundedimageview.RoundedImageView
@@ -20,7 +21,7 @@ import lolchat.model._
 import scala.collection.JavaConversions._
 
 class FriendListAct extends SessionAct with NavDrawer {
-  type RootView = LinearLayout
+  type RootView = RelativeLayout
   lazy val views  : friend_list_act = TypedViewHolder.setContentView(this, TR.layout.friend_list_act)
   lazy val toolbar: Toolbar         = views.toolbar.rootView
 
@@ -29,6 +30,8 @@ class FriendListAct extends SessionAct with NavDrawer {
   lazy val friendListAdapter  = FriendItem.adapter(session.region)
   lazy val friendGroupAdapter = MaterialSpinnerAdapter(Seq("All", "Online", "Offline"))
 
+  lazy val materialSheetFab = new MaterialSheetFab[Fab](
+    views.fab, views.fabSheet, views.overlay, TR.color.md_white.value, TR.color.accent.value)
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
@@ -42,6 +45,8 @@ class FriendListAct extends SessionAct with NavDrawer {
 
     LoLChat.run(groupNames(session)).map(groups => friendGroupAdapter.addItems(groups.filter(_ != "**Default")))
 
+    materialSheetFab // initialize
+
     friendGroupSpinner.spinner +
       (_.setAdapter(friendGroupAdapter)) +
       (_.setOnItemSelectedListener(new OnItemSelectedListener {
@@ -50,12 +55,10 @@ class FriendListAct extends SessionAct with NavDrawer {
           refreshFriendList(friendGroupAdapter.getItem(position))
       }))
 
-    val divider = new DividerDecoration(TR.color.divider.value, 1.dp, 72.dp, 0)
-
     views.recyclerView +
       (_.setLayoutManager(new LinearLayoutManager(this))) +
       (_.setAdapter(friendListAdapter.parentType)) +
-      (_.addItemDecoration(divider))
+      (_.addItemDecoration(new DividerDecoration(TR.color.divider.value, 1.dp, 72.dp, 0)))
   }
 
   override def onResume(): Unit = {
@@ -85,13 +88,17 @@ class FriendListAct extends SessionAct with NavDrawer {
   }
 
   override def onBackPressed(): Unit = {
-    // Make it so the user can come back to this screen in the current state after they press
-    // the back button to go to the android home screen. Without this code, the login screen
-    // will be launched instead.
-    val androidHomeScreen = new Intent(Intent.ACTION_MAIN)
-    androidHomeScreen.addCategory(Intent.CATEGORY_HOME)
-    androidHomeScreen.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    startActivity(androidHomeScreen)
+    if (materialSheetFab.isSheetVisible) {
+      materialSheetFab.hideSheet()
+    } else {
+      // Make it so the user can come back to this screen in the current state after they press
+      // the back button to go to the android home screen. Without this code, the login screen
+      // will be launched instead.
+      val androidHomeScreen = new Intent(Intent.ACTION_MAIN)
+      androidHomeScreen.addCategory(Intent.CATEGORY_HOME)
+      androidHomeScreen.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      startActivity(androidHomeScreen)
+    }
   }
 }
 

@@ -1,15 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-    <include layout="@layout/toolbar"/>
+    <android.support.design.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <com.jude.easyrecyclerview.EasyRecyclerView
-        android:id="@+id/recyclerView"
+        <include layout="@layout/toolbar"/>
+
+        <com.jude.easyrecyclerview.EasyRecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+
+    </android.support.design.widget.CoordinatorLayout>
+
+    <com.thangiee.lolhangouts3.Fab
+        android:id="@+id/fab"
+        android:src="@drawable/ic_add"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"/>
+
+    <!-- Overlay that dims the screen -->
+    <com.gordonwong.materialsheetfab.DimOverlayFrameLayout
+        android:id="@+id/overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <!-- Circular reveal container for the sheet -->
+    <io.codetail.widget.RevealLinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        />
+        android:gravity="end|bottom"
+        android:orientation="vertical">
 
-</LinearLayout>
+        <!-- Sheet that contains your items -->
+        <android.support.v7.widget.CardView
+            android:id="@+id/fabSheet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Send Friend Request"
+                    android:clickable="true"
+                    android:background="?attr/selectableItemBackground"
+                    android:drawableLeft="@drawable/ic_person_add"
+                    android:drawablePadding="24dp"
+                    android:padding="16dp"
+                    android:id="@+id/sendFriendReqBtn"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Create friend group"
+                    android:clickable="true"
+                    android:background="?attr/selectableItemBackground"
+                    android:drawableLeft="@drawable/ic_create_new_folder"
+                    android:drawablePadding="24dp"
+                    android:padding="16dp"
+                    android:id="@+id/createGroupBtn"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:text="Move friend to new group"
+                    android:clickable="true"
+                    android:background="?attr/selectableItemBackground"
+                    android:drawableLeft="@drawable/ic_redo"
+                    android:drawablePadding="24dp"
+                    android:padding="16dp"
+                    android:id="@+id/moveFriendBtn"/>
+            </LinearLayout>
+
+        </android.support.v7.widget.CardView>
+    </io.codetail.widget.RevealLinearLayout>
+</RelativeLayout>
