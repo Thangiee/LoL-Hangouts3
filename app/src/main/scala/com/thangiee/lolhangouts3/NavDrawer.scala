@@ -86,7 +86,7 @@ trait NavDrawer extends SessionAct {
     CurrentUserInfo.load(session).map(user => runOnUi {
       profile.withName(user.summoner.name)
       profile.withEmail(user.profile.statusMsg)
-      val summIconUrl = s"http://avatar.leagueoflegends.com/${session.region.abbr}/${user.summoner.name.toLowerCase().replace(" ", "")}.png"
+      val summIconUrl = s"http://ddragon.leagueoflegends.com/cdn/6.15.1/img/profileicon/${user.summoner.profileIconId}.png"
       profile.withIcon(summIconUrl)
       header.updateProfile(profile)
     })

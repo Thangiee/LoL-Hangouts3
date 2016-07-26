@@ -31,10 +31,11 @@ object enrichments {
 
     def loadImg(url: String)(implicit ctx: Ctx): T = loadImg(url, config = _.centerCrop().crossFade())
 
-    def loadSummIcon(summName: String, region: Region)(implicit ctx: Ctx): T = {
+    def loadSummIcon(summName: String, region: Region, profileIconId: Option[Int] = None)(implicit ctx: Ctx): T = {
       val fmtName = summName.toLowerCase().replace(" ", "")
       loadImg(
-        url = s"http://avatar.leagueoflegends.com/${region.abbr}/$fmtName.png",
+        url = profileIconId.map(id => s"http://ddragon.leagueoflegends.com/cdn/6.15.1/img/profileicon/$id.png")
+                           .getOrElse(s"http://avatar.leagueoflegends.com/${region.abbr}/$fmtName.png"),
         config = _.centerCrop().crossFade()
           .placeholder(TR.drawable.ic_summ_unknown.value)
           .animate(android.R.anim.fade_in)

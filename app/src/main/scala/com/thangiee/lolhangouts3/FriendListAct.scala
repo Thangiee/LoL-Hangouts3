@@ -108,7 +108,7 @@ object FriendItem {
       val msgTv = $[TextView](R.id.msgTv)
 
       override def setData(friend: Friend): Unit = {
-        avatarImg.loadSummIcon(friend.name, region)
+        avatarImg.loadSummIcon(friend.name, region, friend.profileIconId)
         nameTv.setText(friend.name)
         msgTv.setText("todo")
 
