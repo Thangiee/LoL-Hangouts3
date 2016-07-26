@@ -2,11 +2,15 @@ package com.thangiee.lolhangouts3
 
 import android.content.Intent
 import android.os.Bundle
+import android.support.design.widget.{CoordinatorLayout, Snackbar}
 import android.support.v7.app.ActionBar
 import android.support.v7.widget.{LinearLayoutManager, Toolbar}
+import android.text.InputType
 import android.view.{View, ViewGroup}
 import android.widget.AdapterView.OnItemSelectedListener
-import android.widget.{AdapterView, LinearLayout, RelativeLayout, TextView}
+import android.widget.{AdapterView, RelativeLayout, TextView}
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.MaterialDialog.InputCallback
 import com.gordonwong.materialsheetfab.MaterialSheetFab
 import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
 import com.jude.easyrecyclerview.decoration.DividerDecoration
@@ -14,11 +18,14 @@ import com.makeramen.roundedimageview.RoundedImageView
 import com.thangiee.lolhangouts3.NavDrawer.DrawerItem
 import com.thangiee.lolhangouts3.TypedViewHolder._
 import com.thangiee.lolhangouts3.enrichments._
+import com.hanhuy.android.extensions._
 import lolchat._
 import lolchat.data.Region
 import lolchat.model._
+import riotapi.free.RiotApiOps
 
 import scala.collection.JavaConversions._
+import scala.concurrent.duration._
 
 class FriendListAct extends SessionAct with NavDrawer {
   type RootView = RelativeLayout
@@ -35,30 +42,62 @@ class FriendListAct extends SessionAct with NavDrawer {
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
-
-    val friendGroupSpinner: toolbar_spinner =
-      TypedViewHolder.inflate(getLayoutInflater, TR.layout.toolbar_spinner, toolbar, attach = false)
-
-    // setup the spinner in the toolbar to filter friend list by groups
-    val lp = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-    toolbar.addView(friendGroupSpinner.rootView, lp)
-
-    LoLChat.run(groupNames(session)).map(groups => friendGroupAdapter.addItems(groups.filter(_ != "**Default")))
-
+    setupFriendGroupsToolbarSpinner()
+    setupFriendsList()
     materialSheetFab // initialize
 
-    friendGroupSpinner.spinner +
-      (_.setAdapter(friendGroupAdapter)) +
-      (_.setOnItemSelectedListener(new OnItemSelectedListener {
-        def onNothingSelected(adapterView: AdapterView[_]): Unit = {}
-        def onItemSelected(a: AdapterView[_], v: View, position :Int,  l :Long): Unit =
-          refreshFriendList(friendGroupAdapter.getItem(position))
-      }))
+    views.sendFriendReqBtn.onClick0 {
+      materialSheetFab.hideSheet()
+      delay(.5.second) {
+        new MaterialDialog.Builder(ctx)
+        .title("Send Friend Request")
+        .inputType(InputType.TYPE_CLASS_TEXT)
+        .input("Summoner name", "", new InputCallback {
+          def onInput(dalog: MaterialDialog, input: CharSequence): Unit = doFriendReq(input)
+        })
+        .positiveText("Send")
+        .negativeText("Cancel")
+        .show()
+      }
+    }
 
-    views.recyclerView +
-      (_.setLayoutManager(new LinearLayoutManager(this))) +
-      (_.setAdapter(friendListAdapter.parentType)) +
-      (_.addItemDecoration(new DividerDecoration(TR.color.divider.value, 1.dp, 72.dp, 0)))
+    def setupFriendGroupsToolbarSpinner(): Unit = {
+      val friendGroupSpinner: toolbar_spinner =
+        TypedViewHolder.inflate(getLayoutInflater, TR.layout.toolbar_spinner, toolbar, attach = false)
+
+      // setup the spinner in the toolbar to filter friend list by groups
+      val lp = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+      toolbar.addView(friendGroupSpinner.rootView, lp)
+
+      friendGroupSpinner.spinner +
+        (_.setAdapter(friendGroupAdapter)) +
+        (_.setOnItemSelectedListener(new OnItemSelectedListener {
+          def onNothingSelected(adapterView: AdapterView[_]): Unit = {}
+          def onItemSelected(a: AdapterView[_], v: View, position :Int,  l :Long): Unit =
+            refreshFriendList(friendGroupAdapter.getItem(position))
+        }))
+
+      LoLChat.run(groupNames(session)).map(groups => friendGroupAdapter.addItems(groups.filter(_ != "**Default")))
+    }
+
+    def setupFriendsList(): Unit = {
+      views.recyclerView +
+        (_.setLayoutManager(new LinearLayoutManager(this))) +
+        (_.setAdapter(friendListAdapter.parentType)) +
+        (_.addItemDecoration(new DividerDecoration(TR.color.divider.value, 1.dp, 72.dp, 0)))
+    }
+
+    def doFriendReq(name: CharSequence): Unit = {
+      (for {
+        summ <- riotApi.run(RiotApiOps.summonerByName(name.toString), session.region)
+        res  <- LoLChat.run(sendFriendRequest(summ.id.toString)(session))
+      } yield res).fold(
+        err => err.code match {
+          case 404 => Snackbar.make(views.coordinator, s"$name not found", 3000).show()
+          case _   => Snackbar.make(views.coordinator, "Unable to send friend request", 3000).show()
+        },
+        _ => Snackbar.make(views.coordinator, "Friend Request sent", 3000).show())
+    }
   }
 
   override def onResume(): Unit = {
