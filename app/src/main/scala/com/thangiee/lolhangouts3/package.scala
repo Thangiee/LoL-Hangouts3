@@ -12,6 +12,7 @@ package object lolhangouts3 extends AnyRef with Conversions with AuxFunctions {
   type Ctx = Context
   type KVStore[A] = Free[KVStoreA, A]
   type Error = lolchat.data.Error
+  val Error = lolchat.data.Error
 
   val KVStoreOps = com.thangiee.lolhangouts3.free.KVStoreOps
   val PrefStore = com.thangiee.lolhangouts3.free.interp.PrefStore

@@ -125,11 +125,8 @@ trait NavDrawer extends SessionAct {
           .title("Set Status Message")
           .positiveText("Update")
           .negativeText("Cancel")
-          .input("Enter new status message", "", new InputCallback {
-            def onInput(materialDialog: MaterialDialog, charSequence: CharSequence): Unit = {}
-          })
-          .onPositive((dialog: MaterialDialog, _: DialogAction) => {
-            LoLChat.run(ops.modifyProfile(_.copy(statusMsg = dialog.getInputEditText.txt))(session)).map { p =>
+          .onInput("Enter new status message", "", input => {
+            LoLChat.run(ops.modifyProfile(_.copy(statusMsg = input))(session)).map { p =>
               CurrentUserInfo.saveStatusMsg(p.statusMsg, session)
               runOnUi {
                 profile.withEmail(p.statusMsg)

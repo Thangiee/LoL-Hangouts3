@@ -4,6 +4,8 @@ import android.support.v7.widget.RecyclerView.Adapter
 import android.support.v7.widget.Toolbar
 import android.view.View
 import android.widget.{EditText, ImageView, TextView}
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.MaterialDialog.InputCallback
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.{DrawableRequestBuilder, DrawableTypeRequest, Glide}
 import com.dd.morphingbutton.MorphingButton
@@ -121,6 +123,12 @@ object enrichments {
 
       btn
     }
+  }
+
+  implicit class RichMatDialogBuilder(val builder: MaterialDialog.Builder) extends AnyVal {
+    def onInput[A](hint: String, prefill: String, fn: String => A) = builder.input(hint, prefill, new InputCallback {
+      def onInput(materialDialog: MaterialDialog, charSequence: CharSequence): Unit = fn(charSequence.toString)
+    })
   }
 
 }

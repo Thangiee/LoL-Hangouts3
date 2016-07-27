@@ -2,23 +2,22 @@ package com.thangiee.lolhangouts3
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.{CoordinatorLayout, Snackbar}
 import android.support.v7.app.ActionBar
 import android.support.v7.widget.{LinearLayoutManager, Toolbar}
 import android.text.InputType
 import android.view.{View, ViewGroup}
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.{AdapterView, RelativeLayout, TextView}
+import cats.data.Xor
 import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.MaterialDialog.InputCallback
 import com.gordonwong.materialsheetfab.MaterialSheetFab
+import com.hanhuy.android.extensions._
 import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
 import com.jude.easyrecyclerview.decoration.DividerDecoration
 import com.makeramen.roundedimageview.RoundedImageView
 import com.thangiee.lolhangouts3.NavDrawer.DrawerItem
 import com.thangiee.lolhangouts3.TypedViewHolder._
 import com.thangiee.lolhangouts3.enrichments._
-import com.hanhuy.android.extensions._
 import lolchat._
 import lolchat.data.Region
 import lolchat.model._
@@ -52,9 +51,7 @@ class FriendListAct extends SessionAct with NavDrawer {
         new MaterialDialog.Builder(ctx)
         .title("Send Friend Request")
         .inputType(InputType.TYPE_CLASS_TEXT)
-        .input("Summoner name", "", new InputCallback {
-          def onInput(dalog: MaterialDialog, input: CharSequence): Unit = doFriendReq(input)
-        })
+        .onInput("Summoner name", "", doFriendReq(_))
         .positiveText("Send")
         .negativeText("Cancel")
         .show()
@@ -88,15 +85,17 @@ class FriendListAct extends SessionAct with NavDrawer {
     }
 
     def doFriendReq(name: CharSequence): Unit = {
-      (for {
+      val result = for {
         summ <- riotApi.run(RiotApiOps.summonerByName(name.toString), session.region)
-        res  <- LoLChat.run(sendFriendRequest(summ.id.toString)(session))
-      } yield res).fold(
-        err => err.code match {
-          case 404 => Snackbar.make(views.coordinator, s"$name not found", 3000).show()
-          case _   => Snackbar.make(views.coordinator, "Unable to send friend request", 3000).show()
-        },
-        _ => Snackbar.make(views.coordinator, "Friend Request sent", 3000).show())
+        _    <- LoLChat.run(sendFriendRequest(summ.id.toString)(session))
+      } yield ()
+
+      result.value.map {
+        case Xor.Right(_)               => s"Friend Request sent to $name."
+        case Xor.Left(Error(404, _, _)) => s"Request not sent, $name not found."
+        case Xor.Left(err)              => s"${err.code}: Unable to send friend request"
+      }
+      .foreach(msg => longSnackbar(views.coordinator, msg).show())
     }
   }
 
