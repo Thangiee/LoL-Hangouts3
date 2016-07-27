@@ -24,6 +24,7 @@ import lolchat.model._
 import riotapi.free.RiotApiOps
 
 import scala.collection.JavaConversions._
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
 class FriendListAct extends SessionAct with NavDrawer {
@@ -41,31 +42,13 @@ class FriendListAct extends SessionAct with NavDrawer {
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
-    setupFriendGroupsToolbarSpinner()
-    setupFriendsList()
-    materialSheetFab // initialize
-
-    views.sendFriendReqBtn.onClick0 {
-      materialSheetFab.hideSheet()
-      delay(.5.second) {
-        new MaterialDialog.Builder(ctx)
-        .title("Send Friend Request")
-        .inputType(InputType.TYPE_CLASS_TEXT)
-        .onInput("Summoner name", "", doFriendReq(_))
-        .positiveText("Send")
-        .negativeText("Cancel")
-        .show()
-      }
-    }
+    val friendGroupSpinner: toolbar_spinner =
+      TypedViewHolder.inflate(getLayoutInflater, TR.layout.toolbar_spinner, toolbar, attach = false)
 
     def setupFriendGroupsToolbarSpinner(): Unit = {
-      val friendGroupSpinner: toolbar_spinner =
-        TypedViewHolder.inflate(getLayoutInflater, TR.layout.toolbar_spinner, toolbar, attach = false)
-
       // setup the spinner in the toolbar to filter friend list by groups
       val lp = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
       toolbar.addView(friendGroupSpinner.rootView, lp)
-
       friendGroupSpinner.spinner +
         (_.setAdapter(friendGroupAdapter)) +
         (_.setOnItemSelectedListener(new OnItemSelectedListener {
@@ -84,18 +67,93 @@ class FriendListAct extends SessionAct with NavDrawer {
         (_.addItemDecoration(new DividerDecoration(TR.color.divider.value, 1.dp, 72.dp, 0)))
     }
 
-    def doFriendReq(name: CharSequence): Unit = {
-      val result = for {
-        summ <- riotApi.run(RiotApiOps.summonerByName(name.toString), session.region)
-        _    <- LoLChat.run(sendFriendRequest(summ.id.toString)(session))
-      } yield ()
+    setupFriendGroupsToolbarSpinner()
+    setupFriendsList()
+    materialSheetFab // initialize
 
-      result.value.map {
-        case Xor.Right(_)               => s"Friend Request sent to $name."
-        case Xor.Left(Error(404, _, _)) => s"Request not sent, $name not found."
-        case Xor.Left(err)              => s"${err.code}: Unable to send friend request"
+    views.sendFriendReqBtn.onClick0 {
+      def doFriendReq(name: String): Unit = {
+        val result = for {
+          summ <- riotApi.run(RiotApiOps.summonerByName(name.toString), session.region)
+          _    <- LoLChat.run(sendFriendRequest(summ.id.toString)(session))
+        } yield ()
+
+        result.value.map {
+          case Xor.Right(_)               => s"Friend Request sent to $name."
+          case Xor.Left(Error(404, _, _)) => s"Request not sent, $name not found."
+          case Xor.Left(err)              => s"${err.code}: Unable to send friend request"
+        }.foreach(msg => longSnackbar(views.coordinator, msg).show())
       }
-      .foreach(msg => longSnackbar(views.coordinator, msg).show())
+
+      materialSheetFab.hideSheet()
+      delay(.5.second) {
+        new MaterialDialog.Builder(ctx)
+        .title("Send Friend Request")
+        .inputType(InputType.TYPE_CLASS_TEXT)
+        .onInput("Summoner name", "", doFriendReq)
+        .positiveText("Send")
+        .negativeText("Cancel")
+        .show()
+      }
+    }
+
+    views.createGroupBtn.onClick0 {
+      def doCreateNewGroup(name: String): Unit = {
+        LoLChat.run(createGroup(name)(session))
+          .fold(err => s"${err.code}: Fail to create group.", _ => s"$name group created.")
+          .foreach(msg => runOnUi {
+            friendGroupAdapter.addItem(name)
+            friendGroupAdapter.notifyDataSetChanged()
+            longSnackbar(views.coordinator, msg).show()
+          })
+      }
+
+      materialSheetFab.hideSheet()
+      delay(.5.second) {
+        new MaterialDialog.Builder(ctx)
+        .title("Create New Friend Group")
+        .inputType(InputType.TYPE_CLASS_TEXT)
+        .onInput("New group name", "", doCreateNewGroup)
+        .positiveText("Create")
+        .negativeText("Cancel")
+        .show()
+      }
+    }
+
+    views.moveFriendBtn.onClick0 {
+      def doMoveFriendsToGroup(names: Seq[String], group: String): Unit = {
+        Future.sequence(names.map(name => LoLChat.run(moveFriendToGroup(name, group)(session)).value))
+          .foreach { _ =>
+            refreshFriendList(groupFilter = friendGroupSpinner.spinner.getSelectedItem.toString)
+            longSnackbar(views.coordinator, s"${names.size} friends moved to $group.").show()
+          }
+      }
+
+      materialSheetFab.hideSheet()
+
+      val groupItems = Await.result(LoLChat.run(groupNames(session)).getOrElse(Vector.empty), 1.minute)
+      val friendsItems = Await.result(LoLChat.run(friends(session)).getOrElse(Vector.empty), 1.minute)
+
+      new MaterialDialog.Builder(ctx)
+        .title("Move Friends to Group")
+        .content("Select a group to move friends into.")
+        .items(groupItems)
+        .itemsCallbackSingleChoice(0, (_: MaterialDialog, _: View, i: Int, selection: CharSequence) => { next(selection.toString); true })
+        .positiveText("Next")
+        .negativeText("Cancel")
+        .show()
+
+      def next(selectedGroup: String) = new MaterialDialog.Builder(ctx)
+        .title("Move Friends to Group")
+        .content(s"Select friends to move to $selectedGroup group.")
+        .items(friendsItems.collect { case f if !f.groupName.contains(selectedGroup) => f.name }.sorted)
+        .itemsCallbackMultiChoice(null, (_: MaterialDialog, _: Array[Integer], names: Array[CharSequence]) => {
+          doMoveFriendsToGroup(names.map(_.toString), selectedGroup)
+          true
+        })
+        .positiveText("Move")
+        .negativeText("Cancel")
+        .show()
     }
   }
 
