@@ -10,12 +10,21 @@ lazy val commonSettings = Seq(
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 )
 
-lazy val core = project
+lazy val share = project
   .settings(commonSettings)
   .settings(
-    exportJars := true,
-    libraryDependencies ++= Dependencies.coreDeps
+    exportJars := true
   )
+
+lazy val server = project
+  .settings(commonSettings)
+  .settings(
+    version := "0.1.0",
+    scalacOptions ++=  Seq("-Xexperimental", "-Ybackend:GenBCode", "-Ydelambdafy:method", "-target:jvm-1.8", "-Yopt:l:classpath"),
+    libraryDependencies += "org.scala-lang.modules" % "scala-java8-compat_2.11" % "0.7.0",
+    libraryDependencies ++= Dependencies.serverDeps
+  )
+  .dependsOn(share)
 
 lazy val app = project
   .settings(commonSettings)
@@ -52,7 +61,7 @@ lazy val app = project
     run <<= run in Android,
     compile <<= compile in Android
   )
-  .dependsOn(core, riotapi)
+  .dependsOn(share, riotapi)
 
 lazy val riotapi = project
   .settings(commonSettings)
@@ -60,4 +69,4 @@ lazy val riotapi = project
     exportJars := true,
     libraryDependencies ++= Dependencies.riotapiDeps
   )
-  .dependsOn(core)
+  .dependsOn(share)

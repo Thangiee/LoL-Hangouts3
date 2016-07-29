@@ -12,13 +12,6 @@ object Dependencies {
     "repo" at "http://dl.bintray.com/pixplicity/maven"
   )
 
-  lazy val common = Seq(
-    "com.lihaoyi" %% "upickle" % "0.4.1",
-    "com.github.cb372" %% "scalacache-guava" % "0.9.1",
-    "org.scalaj" %% "scalaj-http"   % "2.1.0",
-    "com.typesafe.play" %% "play-json" % "2.4.0-M2"
-  ) ++ cats
-
   lazy val lolchat = Seq(
     "org.igniterealtime.smack" % "smack-android" % "4.1.7",
     "com.github.thangiee" %% "lol-chat-lib" % "0.3.2"
@@ -35,6 +28,18 @@ object Dependencies {
       "org.typelevel" %% "cats-free" % ver
     )
   }
+
+  lazy val upickle = Seq("com.lihaoyi" %% "upickle" % "0.4.1")
+
+  lazy val scalaCache = Seq("com.github.cb372" %% "scalacache-guava" % "0.9.1")
+
+  lazy val scalajHttp = Seq("org.scalaj" %% "scalaj-http" % "2.1.0")
+
+  lazy val playJson = Seq("com.typesafe.play" %% "play-json" % "2.4.0-M2") // newer version requires java 8
+
+  lazy val autoWire = Seq("com.lihaoyi" %% "autowire" % "0.2.5")
+
+  lazy val akka = Seq("com.typesafe.akka" %% "akka-http-experimental" % "2.4.8")
 
   lazy val macroid = {
     val ver = "2.0.0-M5"
@@ -72,22 +77,18 @@ object Dependencies {
     )
   }
 
-  lazy val logging = Seq(
-    "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0"
-  )
+  lazy val logging = Seq("com.typesafe.scala-logging" %% "scala-logging" % "3.4.0")
 
-  lazy val logback = logging ++ Seq(
-    "ch.qos.logback" %  "logback-classic" % "1.1.7"
-  )
+  lazy val logback = logging ++ Seq("ch.qos.logback" %  "logback-classic" % "1.1.7")
 
   lazy val testing = Seq(
     "org.scalatest"          %% "scalatest"       % "2.2.5"     % "test",
     "org.scalacheck"         %% "scalacheck"      % "1.12.4"    % "test"
   )
 
-  val coreDeps = common
-  val riotapiDeps = common ++ lolchatCore ++ testing ++ logback.map(_ % "provided")
-  val androidDeps = common ++ androidSupport ++ lolchat ++ androidLibs ++ logging
+  val serverDeps = akka ++ autoWire ++ playJson
+  val riotapiDeps = upickle ++ scalaCache ++ scalajHttp ++ playJson ++ cats ++ lolchatCore ++ testing ++ logback.map(_ % "provided")
+  val androidDeps = autoWire ++ upickle ++ scalaCache ++ scalajHttp ++ playJson ++ cats ++ androidSupport ++ lolchat ++ androidLibs ++ logging
 }
 
 object ProguardValues {
