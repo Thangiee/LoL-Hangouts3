@@ -8,7 +8,7 @@ import riotapi._
 
 import scala.language.implicitConversions
 
-package object lolhangouts3 extends AnyRef with Conversions with AuxFunctions {
+package object lolhangouts3 extends AnyRef with Conversions {
   type Ctx = Context
   type KVStore[A] = Free[KVStoreA, A]
   type Error = lolchat.data.Error
