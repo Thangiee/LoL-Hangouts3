@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS message (
+  userid INTEGER NOT NULL,
+  friendid INTEGER NOT NULL,
+  text TEXT NOT NULL DEFAULT ''::text,
+  sender BOOLEAN NOT NULL,
+  read BOOLEAN NOT NULL,
+  timestamp TIMESTAMP NOT NULL DEFAULT now(),
+  deleted BOOLEAN NOT NULL DEFAULT false
+);

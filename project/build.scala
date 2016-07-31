@@ -86,7 +86,14 @@ object Dependencies {
     "org.scalacheck"         %% "scalacheck"      % "1.12.4"    % "test"
   )
 
-  val serverDeps = akka ++ autoWire ++ playJson
+  lazy val database = Seq(
+    "com.zaxxer" % "HikariCP" % "2.4.6",
+    "org.postgresql" % "postgresql" % "9.4.1208",
+    "com.h2database" % "h2" % "1.4.192" % "test",
+    "io.getquill" %% "quill-jdbc" % "0.8.0"
+  )
+
+  val serverDeps = akka ++ autoWire ++ playJson ++ database ++ testing
   val riotapiDeps = upickle ++ scalaCache ++ scalajHttp ++ playJson ++ cats ++ lolchatCore ++ testing ++ logback.map(_ % "provided")
   val androidDeps = autoWire ++ upickle ++ scalaCache ++ scalajHttp ++ playJson ++ cats ++ androidSupport ++ lolchat ++ androidLibs ++ logging
 }
