@@ -13,6 +13,7 @@ lazy val commonSettings = Seq(
 lazy val share = project
   .settings(commonSettings)
   .settings(
+    libraryDependencies ++= Dependencies.playJson,
     exportJars := true
   )
 

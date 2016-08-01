@@ -4,7 +4,7 @@ import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import server.Message
+import share.Message
 
 trait BaseSpec extends FlatSpec
                        with BeforeAndAfter

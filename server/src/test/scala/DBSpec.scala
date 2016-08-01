@@ -1,7 +1,9 @@
 import java.util.Date
 
 import io.getquill._
-import server.{Message, Schema}
+import server.Schema
+import share.Message
+
 import scala.util.Random._
 
 class DBSpec extends BaseSpec with Schema[H2Dialect, LowerCase] {
@@ -13,7 +15,7 @@ class DBSpec extends BaseSpec with Schema[H2Dialect, LowerCase] {
       val (msgsBtw, _) = msgs.partition(m => m.userId == aliceId && m.friendId == bobId)
       ctx.run(quote(query[Message].delete))
       ctx.run(quote(query[Message].insert))(msgs)
-      ctx.run(Message.all(aliceId, bobId)) should be(msgsBtw)
+      ctx.run(Messages.all(aliceId, bobId)) should be(msgsBtw)
     }
   }
 
@@ -21,8 +23,8 @@ class DBSpec extends BaseSpec with Schema[H2Dialect, LowerCase] {
     forAll { msgs: List[Message] =>
       ctx.run(quote(query[Message].delete))
       ctx.run(quote(query[Message].insert))(msgs)
-      ctx.run(Message.deleteAll(aliceId, bobId))
-      ctx.run(Message.all(aliceId, bobId)).foreach(_.deleted should be(true))
+      ctx.run(Messages.markDeleted(aliceId, bobId))
+      ctx.run(Messages.all(aliceId, bobId)).foreach(_.deleted should be(true))
     }
   }
 
@@ -31,7 +33,7 @@ class DBSpec extends BaseSpec with Schema[H2Dialect, LowerCase] {
       val newMsgs = msgs2.map(_.copy(userId = aliceId, friendId = bobId, timestamp = new Date()))
       ctx.run(quote(query[Message].delete))
       ctx.run(quote(query[Message].insert))(shuffle(msgs ++ newMsgs))
-      ctx.run(Message.recentN(aliceId, bobId, newMsgs.size)) should contain theSameElementsAs newMsgs
+      ctx.run(Messages.recentN(aliceId, bobId, newMsgs.size)) should contain theSameElementsAs newMsgs
     }
   }
 
@@ -39,7 +41,7 @@ class DBSpec extends BaseSpec with Schema[H2Dialect, LowerCase] {
     forAll { msgs: List[Message] =>
       ctx.run(quote(query[Message].delete))
       ctx.run(quote(query[Message].insert))(msgs)
-      ctx.run(Message.newest(aliceId, bobId)).headOption shouldEqual ctx.run(Message.recentN(aliceId, bobId, 1)).headOption
+      ctx.run(Messages.newest(aliceId, bobId)).headOption shouldEqual ctx.run(Messages.recentN(aliceId, bobId, 1)).headOption
     }
   }
 }

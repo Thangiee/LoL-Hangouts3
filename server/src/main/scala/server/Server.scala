@@ -12,18 +12,16 @@ object AutowireServer extends autowire.Server[String, Reads, Writes] {
   def write[Result: Writes](r: Result): String = Json.toJson(r).toString()
 }
 
-object Server extends App with Api {
+object Server extends App {
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
-
-  def echo(txt: String): String = "ECHO from server: " + txt
 
   val routes = get {
     path("api" / Segments) { segs =>
       parameterMap { params =>
         complete {
-          AutowireServer.route[Api](Server)(autowire.Core.Request(segs, params))
+          AutowireServer.route[Api](ApiImpl)(autowire.Core.Request(segs, params))
         }
       }
     }

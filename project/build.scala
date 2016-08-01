@@ -1,4 +1,3 @@
-import android.AutoBuild
 import sbt._
 import android.Keys._
 
