@@ -11,9 +11,9 @@ import share.ServerConfig._
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-object Client extends autowire.Client[String, Reads, Writes] {
+private object Client extends autowire.Client[String, Reads, Writes] {
 
-  def doCall(req: Client.Request): Future[String] = Future {
+  def doCall(req: Request): Future[String] = Future {
     scalaj.http.Http(s"http://$interface:$port/api/" + req.path.mkString("/"))
       .timeout(connTimeoutMs = 3.seconds.toMillis.toInt, readTimeoutMs = 3.seconds.toMillis.toInt)
       .params(req.args)
