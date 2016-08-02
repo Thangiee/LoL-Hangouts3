@@ -4,8 +4,11 @@ import android.os.Bundle
 import com.thangiee.lolhangouts3.SessionAct.NoSessionException
 import lolchat._
 import lolchat.model.Session
+import rx.Ctx.Owner
 
 trait SessionAct extends BaseActivity {
+
+  implicit val owner: Owner = rx.Ctx.Owner.safe()
 
   val session: Session =
     (for {
@@ -33,24 +36,23 @@ trait SessionAct extends BaseActivity {
     })
   }
 
+  private var actVisible = true
+  def isActVisible: Boolean = actVisible
+
   override def onResume(): Unit = {
     super.onResume()
+    actVisible = true
   }
 
   override def onPause(): Unit = {
     super.onPause()
+    actVisible = false
   }
 
   override def onDestroy(): Unit = {
     super.onDestroy()
-    stopAllSessionStreams()
   }
 
-  def stopAllSessionStreams(): Unit = {
-    session.msgStream.clear()
-    session.connectionEventStream.clear()
-    session.friendListStream.clear()
-  }
 }
 
 object SessionAct {

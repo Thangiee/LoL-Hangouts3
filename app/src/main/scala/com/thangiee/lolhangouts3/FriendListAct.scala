@@ -40,6 +40,8 @@ class FriendListAct extends SessionAct with NavDrawer {
   lazy val materialSheetFab = new MaterialSheetFab[Fab](
     views.fab, views.fabSheet, views.overlay, TR.color.md_white.value, TR.color.accent.value)
 
+  lazy val friendListEventHandler = session.friendListStream.foreachEvent(_ => if (isActVisible) refreshFriendList())
+
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
     val friendGroupSpinner: toolbar_spinner =
@@ -69,7 +71,10 @@ class FriendListAct extends SessionAct with NavDrawer {
 
     setupFriendGroupsToolbarSpinner()
     setupFriendsList()
-    materialSheetFab // initialize
+
+    // initialize lazies
+    materialSheetFab
+    friendListEventHandler
 
     views.sendFriendReqBtn.onClick0 {
       def doFriendReq(name: String): Unit = {
@@ -160,12 +165,15 @@ class FriendListAct extends SessionAct with NavDrawer {
   override def onResume(): Unit = {
     super.onResume()
     refreshFriendList()
-    session.friendListStream.foreach(_ => refreshFriendList())
   }
 
   override def onPause(): Unit = {
     super.onPause()
-    stopAllSessionStreams()
+  }
+
+  override def onDestroy(): Unit = {
+    super.onDestroy()
+    friendListEventHandler.kill()
   }
 
   def refreshFriendList(groupFilter: String = "all"): Unit = {
