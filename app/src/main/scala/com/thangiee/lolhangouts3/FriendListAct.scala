@@ -1,5 +1,6 @@
 package com.thangiee.lolhangouts3
 
+import android.app.Notification
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.ActionBar
@@ -41,6 +42,18 @@ class FriendListAct extends SessionAct with NavDrawer {
     views.fab, views.fabSheet, views.overlay, TR.color.md_white.value, TR.color.accent.value)
 
   lazy val friendListEventHandler = session.friendListStream.foreachEvent(_ => if (isActVisible) refreshFriendList())
+  lazy val msgEventHandler = session.msgStream.foreachEvent(msg => {
+    // todo: improve
+    val notif = new Notification.Builder(ctx)
+      .setSmallIcon(TR.drawable.ic_launcher.resid)
+      .setContentTitle("New Message")
+      .setContentText(msg.txt)
+      .setStyle(new Notification.InboxStyle().setSummaryText("Open chat"))
+      .setPriority(Notification.PRIORITY_HIGH)
+      .build()
+
+    notifyMgr.notify(100, notif)
+  })
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
@@ -75,6 +88,7 @@ class FriendListAct extends SessionAct with NavDrawer {
     // initialize lazies
     materialSheetFab
     friendListEventHandler
+    msgEventHandler
 
     views.sendFriendReqBtn.onClick0 {
       def doFriendReq(name: String): Unit = {
@@ -174,6 +188,7 @@ class FriendListAct extends SessionAct with NavDrawer {
   override def onDestroy(): Unit = {
     super.onDestroy()
     friendListEventHandler.kill()
+    msgEventHandler.kill()
   }
 
   def refreshFriendList(groupFilter: String = "all"): Unit = {
