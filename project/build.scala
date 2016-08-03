@@ -30,6 +30,8 @@ object Dependencies {
 
   lazy val upickle = Seq("com.lihaoyi" %% "upickle" % "0.4.1")
 
+  lazy val boopickle = Seq("me.chrons" %% "boopickle" % "1.2.4")
+
   lazy val scalaCache = Seq("com.github.cb372" %% "scalacache-guava" % "0.9.1")
 
   lazy val scalajHttp = Seq("org.scalaj" %% "scalaj-http" % "2.1.0")
@@ -72,7 +74,8 @@ object Dependencies {
 //      "com.noveogroup.android" % "android-logger" % "1.3.5",
       aar("com.mikepenz" % "materialdrawer" % "5.3.6"),
       "com.afollestad.material-dialogs" % "core" % "0.8.6.2",
-      "com.gordonwong" % "material-sheet-fab" % "1.2.1"
+      "com.gordonwong" % "material-sheet-fab" % "1.2.1",
+      "me.himanshusoni.chatmessageview" % "chat-message-view" % "1.0.3"
     )
   }
 
@@ -94,7 +97,7 @@ object Dependencies {
 
   val serverDeps = akka ++ autoWire ++ playJson ++ database ++ testing
   val riotapiDeps = upickle ++ scalaCache ++ scalajHttp ++ playJson ++ cats ++ lolchatCore ++ testing ++ logback.map(_ % "provided")
-  val androidDeps = autoWire ++ upickle ++ scalaCache ++ scalajHttp ++ playJson ++ cats ++ androidSupport ++ lolchat ++ androidLibs ++ logging
+  val androidDeps = autoWire ++ upickle ++ scalaCache ++ scalajHttp ++ playJson ++ boopickle ++ cats ++ androidSupport ++ lolchat ++ androidLibs ++ logging
 }
 
 object ProguardValues {

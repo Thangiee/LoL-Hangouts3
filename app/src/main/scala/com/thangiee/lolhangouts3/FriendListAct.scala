@@ -76,6 +76,11 @@ class FriendListAct extends SessionAct with NavDrawer {
     }
 
     def setupFriendsList(): Unit = {
+      friendListAdapter.setOnItemClickListener(i => {
+        val friend = friendListAdapter.getItem(i)
+        startActivity(ChatAct(friend))
+      })
+
       views.recyclerView +
         (_.setLayoutManager(new LinearLayoutManager(this))) +
         (_.setAdapter(friendListAdapter.parentType)) +
