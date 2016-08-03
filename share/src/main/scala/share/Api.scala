@@ -25,7 +25,7 @@ case class Message(
   friendId: Int,
   text: String,
   sender: Boolean = true,
-  read: Boolean = false,
+  read: Boolean = true,
   deleted: Boolean = false,
   timestamp: Date = new Date()
 )
