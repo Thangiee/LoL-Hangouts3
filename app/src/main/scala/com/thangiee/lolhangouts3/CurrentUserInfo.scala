@@ -5,6 +5,8 @@ import lolchat.data._
 import lolchat.model.{Profile, Session}
 import riotapi.free.RiotApiOps
 import riotapi.models.Summoner
+import AuxFunctions._
+import boopickle.Default._
 
 case class CurrentUserInfo(summoner: Summoner, profile: Profile)
 
@@ -13,7 +15,7 @@ object CurrentUserInfo {
   def load(sess: Session): AsyncResult[CurrentUserInfo] = {
     def setStatusMsg(profile: Profile): Profile = {
       if (profile.statusMsg.isEmpty) {
-        val msg = PrefStore.run(KVStoreOps.get[String](s"${sess.user}-statusMsg")).getOrElse("Using LoL Hangouts app")
+        val msg = prefsGet[String](s"${sess.user}-statusMsg").getOrElse("Using LoL Hangouts app")
         profile.copy(statusMsg = msg)
       } else {
         profile
@@ -26,5 +28,5 @@ object CurrentUserInfo {
     } yield CurrentUserInfo(summoner, profile)
   }
 
-  def saveStatusMsg(msg: String, sess: Session): Unit= PrefStore.run(KVStoreOps.put(s"${sess.user}-statusMsg", msg))
+  def saveStatusMsg(msg: String, sess: Session): Unit= prefsPut(s"${sess.user}-statusMsg", msg)
 }

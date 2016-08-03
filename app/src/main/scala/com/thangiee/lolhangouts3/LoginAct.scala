@@ -9,7 +9,7 @@ import com.thangiee.lolhangouts3.TypedViewHolder.login_act
 import com.thangiee.lolhangouts3.enrichments._
 import lolchat._
 import lolchat.model._
-import play.api.libs.json.{Format, Json}
+import boopickle.Default._
 
 import scala.concurrent.duration._
 
@@ -91,9 +91,10 @@ object LoginAct {
 case class LoginConfig(user: String, passwd: String, offlineLogin: Boolean)
 
 object LoginConfig {
-  val key = "4474d03OEG"
-  implicit val loginConfigFmt : Format[LoginConfig] = Json.format[LoginConfig]
+  import AuxFunctions._
 
-  def save(config: LoginConfig) = PrefStore.run(KVStoreOps.put(LoginConfig.key, config))
-  def load: Option[LoginConfig] = PrefStore.run(KVStoreOps.get[LoginConfig](LoginConfig.key))
+  val key = "4474d03OEG"
+
+  def save(config: LoginConfig) = prefsPut(LoginConfig.key, config)
+  def load: Option[LoginConfig] = prefsGet[LoginConfig](LoginConfig.key)
 }

@@ -9,7 +9,7 @@ import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
 import com.thangiee.lolhangouts3.TypedViewHolder.region_act
 import enrichments._
 import lolchat.data.Region
-import play.api.libs.json.Json
+import boopickle.Default._
 
 import scala.collection.JavaConversions._
 import scala.language.postfixOps
@@ -43,15 +43,13 @@ class RegionSelectionAct extends BaseActivity {
 case class RegionItem(region: Region, name: String, iconId: Int)
 
 object RegionItem {
+  import AuxFunctions._
 
   val key = "RO291i43bN"
 
-  implicit val regionFmt = Json.format[Region]
-  implicit val regionItemFmt = Json.format[RegionItem]
+  def loadSelected: Option[Item] = prefsGet[RegionItem](RegionItem.key)
 
-  def loadSelected: Option[Item] = PrefStore.run(KVStoreOps.get[RegionItem](RegionItem.key))
-
-  def cache(region: RegionItem) = PrefStore.run(KVStoreOps.put(RegionItem.key, region))
+  def cache(region: RegionItem) = prefsPut(RegionItem.key, region)
 
   lazy val all = Vector(
     RegionItem(Region.NA, "North America", TR.drawable.ic_na.resid),
