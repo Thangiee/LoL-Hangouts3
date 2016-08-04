@@ -41,8 +41,8 @@ class FriendListAct extends SessionAct with NavDrawer {
   lazy val materialSheetFab = new MaterialSheetFab[Fab](
     views.fab, views.fabSheet, views.overlay, TR.color.md_white.value, TR.color.accent.value)
 
-  lazy val friendListEventHandler = session.friendListStream.foreachEvent(_ => if (isActVisible) refreshFriendList())
-  lazy val msgEventHandler = session.msgStream.foreachEvent(msg => {
+  lazy val friendListEventHandler = session.friendListStream.map(_ => if (isActVisible) refreshFriendList())
+  lazy val msgEventHandler = session.msgStream.map(msg => {
     // todo: improve
     val notif = new Notification.Builder(ctx)
       .setSmallIcon(TR.drawable.ic_launcher.resid)

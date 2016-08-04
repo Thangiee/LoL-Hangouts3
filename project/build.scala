@@ -11,12 +11,13 @@ object Dependencies {
     "repo" at "http://dl.bintray.com/pixplicity/maven"
   )
 
+  val lolchatVer = "0.3.4"
   lazy val lolchat = Seq(
     "org.igniterealtime.smack" % "smack-android" % "4.1.7",
-    "com.github.thangiee" %% "lol-chat-lib" % "0.3.3"
+    "com.github.thangiee" %% "lol-chat-lib" % lolchatVer
   ).map(_.exclude("xpp3", "xpp3"))
 
-  lazy val lolchatCore = Seq("com.github.thangiee" %% "lol-chat-core" % "0.3.2")
+  lazy val lolchatCore = Seq("com.github.thangiee" %% "lol-chat-core" % lolchatVer)
 
   lazy val cats = {
     val ver = "0.6.1"
