@@ -34,7 +34,8 @@
         <activity android:name=".FriendListAct"
                   android:launchMode="singleTop"/>
 
-        <activity android:name=".ChatAct"/>
+        <activity android:name=".ChatAct"
+                  android:windowSoftInputMode="stateHidden|adjustResize"/>
 
     </application>
 
