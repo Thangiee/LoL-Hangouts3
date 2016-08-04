@@ -20,7 +20,6 @@ import lolchat.model._
 import org.joda.time.format.DateTimeFormat
 import share.Message
 
-import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 
 class ChatAct extends SessionAct {
@@ -56,24 +55,18 @@ class ChatAct extends SessionAct {
     msgField.onClick0(if (msgField.hasFocus) delay(200.millis)(scrollToBottom()))
 
     clientApi.getRecentMsgs(userSummId, friend.id.toInt, 1000, filterRead = false).call().toAsyncResult
-      .map(msgs => runOnUi {
-        chatMsgAdapter.addAll(msgs)
-        chatMsgAdapter.notifyDataSetChanged()
-        scrollToBottom()
-      })
+      .map(msgs => runOnUi { chatMsgAdapter.addItems(msgs); scrollToBottom() })
 
     sendBtn.onClick0 {
       val txtMsg = msgField.txt
-      if (txtMsg.nonEmpty) LoLChat.run(sendMsg(friend.id, txtMsg)(session))
-        .map(_ => {
+      if (txtMsg.nonEmpty) LoLChat.run(sendMsg(friend.id, txtMsg)(session)).fold(
+        err => Toast.makeText(ctx, s"Failed to send message: ${err.msg}", Toast.LENGTH_LONG).show(),
+        succ => {
           val msg: Message = Message(userSummId, friend.id.toInt, txtMsg)
           clientApi.saveMsg(msg).call()
-          runOnUi {
-            msgField.setText("")
-            addMessageToChatView(msg)
-          }
-        })
-        .leftMap(err => Toast.makeText(ctx, s"Failed to send message: ${err.msg}", Toast.LENGTH_LONG).show())
+          runOnUi { msgField.setText(""); addMessageToChatView(msg) }
+        }
+      )
     }
   }
 
@@ -84,8 +77,7 @@ class ChatAct extends SessionAct {
   }
 
   def addMessageToChatView(message: Message): Unit = {
-    chatMsgAdapter.insert(message, 0) // add to the front
-    chatMsgAdapter.notifyDataSetChanged()
+    chatMsgAdapter.insertItem(message, 0) // add to the front
     scrollToBottom()
   }
 

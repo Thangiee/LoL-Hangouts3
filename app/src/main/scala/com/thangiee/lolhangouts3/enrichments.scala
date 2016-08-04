@@ -15,6 +15,7 @@ import com.github.florent37.viewanimator.ViewAnimator
 import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
 import lolchat.data.Region
 
+import scala.collection.JavaConversions._
 import scala.concurrent.duration.FiniteDuration
 
 object enrichments {
@@ -57,6 +58,9 @@ object enrichments {
 
   implicit class RichRecyclerArrayAdapter[T](val adapter: RecyclerArrayAdapter[T]) extends AnyVal {
     def parentType: Adapter[BaseViewHolder[T]] = adapter.asInstanceOf[Adapter[BaseViewHolder[T]]]
+    def insertItem(data: T, index: Int) = { adapter.insert(data, index); adapter.notifyDataSetChanged() }
+    def addItem(data: T) = { adapter.add(data); adapter.notifyDataSetChanged() }
+    def addItems(data: Seq[T]) = { adapter.addAll(data); adapter.notifyDataSetChanged() }
   }
 
   implicit class RichToolbar(val tb: Toolbar) extends AnyVal {

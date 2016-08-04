@@ -1,6 +1,6 @@
 package com.thangiee.lolhangouts3
 
-import android.app.Notification
+import android.app.{Notification, PendingIntent}
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.ActionBar
@@ -24,7 +24,9 @@ import lolchat.data.Region
 import lolchat.model._
 import riotapi.free.RiotApiOps
 import share.Message
+import enrichments._
 import ClientApi._
+import android.graphics.Color
 import autowire._
 
 import scala.collection.JavaConversions._
@@ -56,8 +58,12 @@ class FriendListAct extends SessionAct with NavDrawer {
         .setSmallIcon(TR.drawable.ic_launcher.resid)
         .setContentTitle("New Message")
         .setContentText(msg.txt)
+        .setContentIntent(PendingIntent.getActivity(ctx, 0, ChatAct(userSummId, ???), PendingIntent.FLAG_ONE_SHOT))
         .setStyle(new Notification.InboxStyle().setSummaryText("Open chat"))
         .setPriority(Notification.PRIORITY_HIGH)
+        .setTicker("new message!!!")
+        .setAutoCancel(true)
+        .setLights(Color.BLUE, 300, 3000) // blue light, 300ms on, 3s off
         .build()
 
       notifyMgr.notify(100, notif)
@@ -68,7 +74,6 @@ class FriendListAct extends SessionAct with NavDrawer {
     val isRead = msg.fromId == activeFriendChat.map(_.id).getOrElse("-1")
     clientApi.saveMsg(Message(userSummId, msg.fromId.toInt, msg.txt, sender = false, isRead)).call()
   })
-
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
@@ -229,8 +234,7 @@ class FriendListAct extends SessionAct with NavDrawer {
       }
 
       friendListAdapter.clear()
-      friendListAdapter.addAll(filteredFriends.sortBy(f => (!f.isOnline, f.name)))
-      friendListAdapter.notifyDataSetChanged()
+      friendListAdapter.addItems(filteredFriends.sortBy(f => (!f.isOnline, f.name)))
     })
   }
 
