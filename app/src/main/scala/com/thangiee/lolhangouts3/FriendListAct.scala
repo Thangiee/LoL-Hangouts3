@@ -40,6 +40,7 @@ class FriendListAct extends SessionAct with NavDrawer {
 
   val selectedDrawer: DrawerItem = NavDrawer.friendList
 
+  lazy val userSummId = getIntent.getIntExtra("arg1", -1)
   lazy val friendListAdapter  = FriendItem.adapter(session.region)
   lazy val friendGroupAdapter = MaterialSpinnerAdapter(Seq("All", "Online", "Offline"))
 
@@ -63,19 +64,11 @@ class FriendListAct extends SessionAct with NavDrawer {
     }
   })
 
-  lazy val savingReceivedMsg = CurrentUserInfo.load(session).map(user =>
-    session.msgStream.map(msg =>
-      clientApi.saveMsg(
-        Message(
-          user.summoner.id,
-          msg.fromId.toInt,
-          msg.txt,
-          sender = false,
-          read = msg.fromId == activeFriendChat.map(_.id).getOrElse("-1")
-        )
-      ).call()
-    )
-  )
+  lazy val savingReceivedMsg = session.msgStream.map(msg => {
+    val isRead = msg.fromId == activeFriendChat.map(_.id).getOrElse("-1")
+    clientApi.saveMsg(Message(userSummId, msg.fromId.toInt, msg.txt, sender = false, isRead)).call()
+  })
+
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
@@ -101,7 +94,7 @@ class FriendListAct extends SessionAct with NavDrawer {
       friendListAdapter.setOnItemClickListener(i => {
         val friend = friendListAdapter.getItem(i)
         activeFriendChat = Some(friend)
-        startActivity(ChatAct(friend))
+        startActivity(ChatAct(userSummId, friend))
       })
 
       views.recyclerView +
@@ -223,7 +216,7 @@ class FriendListAct extends SessionAct with NavDrawer {
     super.onDestroy()
     refreshingFriendList.kill()
     notifyingReceivedMsg.kill()
-    savingReceivedMsg.map(_.kill())
+    savingReceivedMsg.kill()
   }
 
   def refreshFriendList(groupFilter: String = "all"): Unit = {
@@ -257,7 +250,7 @@ class FriendListAct extends SessionAct with NavDrawer {
 }
 
 object FriendListAct {
-  def apply()(implicit ctx: Ctx): Intent = new Intent(ctx, classOf[FriendListAct])
+  def apply(userSummId: Int)(implicit ctx: Ctx): Intent = new Intent(ctx, classOf[FriendListAct]).putExtra("arg1", userSummId)
 }
 
 object FriendItem {

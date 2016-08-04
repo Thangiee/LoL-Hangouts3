@@ -28,7 +28,7 @@ class ChatAct extends SessionAct {
   lazy val views: TypedViewHolder.chat_act = TypedViewHolder.setContentView(this, TR.layout.chat_act)
   lazy val toolbar: Toolbar = views.toolbar.rootView
 
-  val userInfo = CurrentUserInfo.load(session)
+  lazy val userSummId = getIntent.getIntExtra("arg0", -1)
   lazy val friend = Unpickle[Friend].fromBytes(ByteBuffer.wrap(getIntent.getByteArrayExtra("arg1")))
 
   lazy val chatMsgAdapter = ChatMessage.adapter(session, friend)
@@ -36,10 +36,9 @@ class ChatAct extends SessionAct {
   lazy val sendBtn = views.sendBtn
   lazy val msgField = views.messageEdt
 
-  lazy val showReceivingMsg = userInfo.map(user => session.msgStream.collect {
-    case msg if msg.fromId == friend.id =>
-      runOnUi(addMessageToChatView(Message(user.summoner.id, msg.fromId.toInt, msg.txt, sender = false)))
-  })
+  lazy val showReceivingMsg = session.msgStream.collect {
+    case msg if msg.fromId == friend.id => runOnUi(addMessageToChatView(Message(userSummId, msg.fromId.toInt, msg.txt, sender = false)))
+  }
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
@@ -56,34 +55,32 @@ class ChatAct extends SessionAct {
 
     msgField.onClick0(if (msgField.hasFocus) delay(200.millis)(scrollToBottom()))
 
-    userInfo.map(user => {
-      clientApi.getRecentMsgs(user.summoner.id, friend.id.toInt, 1000, filterRead = false).call().toAsyncResult
-        .map(msgs => runOnUi {
-          chatMsgAdapter.addAll(msgs)
-          chatMsgAdapter.notifyDataSetChanged()
-          scrollToBottom()
-        })
+    clientApi.getRecentMsgs(userSummId, friend.id.toInt, 1000, filterRead = false).call().toAsyncResult
+      .map(msgs => runOnUi {
+        chatMsgAdapter.addAll(msgs)
+        chatMsgAdapter.notifyDataSetChanged()
+        scrollToBottom()
+      })
 
-      sendBtn.onClick0 {
-        val txtMsg = msgField.txt
-        if (txtMsg.nonEmpty) LoLChat.run(sendMsg(friend.id, txtMsg)(session))
-          .map(_ => {
-            val msg: Message = Message(user.summoner.id, friend.id.toInt, txtMsg)
-            clientApi.saveMsg(msg).call()
-            runOnUi {
-              msgField.setText("")
-              addMessageToChatView(msg)
-            }
-          })
-          .leftMap(err => Toast.makeText(ctx, s"Failed to send message: ${err.msg}", Toast.LENGTH_LONG).show())
-      }
-    })
+    sendBtn.onClick0 {
+      val txtMsg = msgField.txt
+      if (txtMsg.nonEmpty) LoLChat.run(sendMsg(friend.id, txtMsg)(session))
+        .map(_ => {
+          val msg: Message = Message(userSummId, friend.id.toInt, txtMsg)
+          clientApi.saveMsg(msg).call()
+          runOnUi {
+            msgField.setText("")
+            addMessageToChatView(msg)
+          }
+        })
+        .leftMap(err => Toast.makeText(ctx, s"Failed to send message: ${err.msg}", Toast.LENGTH_LONG).show())
+    }
   }
 
   override def onDestroy(): Unit = {
     super.onDestroy()
     chatMsgAdapter.clear()
-    showReceivingMsg.map(_.kill())
+    showReceivingMsg.kill()
   }
 
   def addMessageToChatView(message: Message): Unit = {
@@ -96,8 +93,9 @@ class ChatAct extends SessionAct {
 }
 
 object ChatAct {
-  def apply(friend: Friend)(implicit ctx: Ctx): Intent = {
+  def apply(userSummId: Int, friend: Friend)(implicit ctx: Ctx): Intent = {
     val i = new Intent(ctx, classOf[ChatAct])
+    i.putExtra("arg0", userSummId)
     i.putExtra("arg1", Pickle.intoBytes(friend).array())
   }
 }

@@ -47,18 +47,17 @@ class LoginAct extends BaseActivity {
     delay(500.millis)(views.loginBtn.fillProgressBar(0, 37, 370.millis))
 
     val loginOp = if (views.offlineLoginSwitch.isChecked) offlineLogin else login
-    LoLChat.run(loginOp(sess)).fold(failLogin, _ => succLogin())
+    LoLChat.run(loginOp(sess)).flatMap(_ => CurrentUserInfo.load(sess)).fold(failLogin, succLogin)
 
     def failLogin(chatError: Error): Unit = delayRunOnUi(1.second) {
       List(views.usernameEdit, views.passwordEdit).foreach(_.setError(chatError.msg))
       views.loginBtn.morphToErrorBtn
     }
 
-    def succLogin(): Unit = delayRunOnUi(1000.millis) {
+    def succLogin(userInfo: CurrentUserInfo): Unit = delayRunOnUi(1000.millis) {
       views.loginBtn.fillProgressBar(37, 100, 500.millis)
-      CurrentUserInfo.load(sess) // preload
       delay(1.second)(views.loginBtn.morphToSuccessBtn)
-      delay(1.5.seconds) { startActivity(FriendListAct()); finish() }
+      delay(1.5.seconds) { startActivity(FriendListAct(userInfo.summoner.id)); finish() }
     }
   }
 
