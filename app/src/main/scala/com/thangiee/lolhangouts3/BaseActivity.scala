@@ -1,6 +1,6 @@
 package com.thangiee.lolhangouts3
 
-import android.app.NotificationManager
+import android.app.{Notification, NotificationManager}
 import android.content.Context
 import android.os.Bundle
 import android.support.design.widget.Snackbar
@@ -27,4 +27,11 @@ trait BaseActivity extends AppCompatActivity with TypedFindView with AuxFunction
 
   lazy val notifyMgr = getSystemService(Context.NOTIFICATION_SERVICE).asInstanceOf[NotificationManager]
 
+  def showNotification(id: Int, notification: Notification) = {
+    notification.defaults |= Notification.DEFAULT_VIBRATE
+    notifyMgr.notify(id, notification)
+  }
+
+  val msgNotifiId = 100
+  def showMsgNotifi(notification: Notification) = showNotification(msgNotifiId, notification)
 }

@@ -9,7 +9,7 @@ import android.text.InputType
 import android.view.{View, ViewGroup}
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.{AdapterView, RelativeLayout, TextView}
-import cats.data.Xor
+import cats.data.{Xor, XorT}
 import com.afollestad.materialdialogs.MaterialDialog
 import com.gordonwong.materialsheetfab.MaterialSheetFab
 import com.hanhuy.android.extensions._
@@ -18,9 +18,8 @@ import com.jude.easyrecyclerview.decoration.DividerDecoration
 import com.makeramen.roundedimageview.RoundedImageView
 import com.thangiee.lolhangouts3.NavDrawer.DrawerItem
 import com.thangiee.lolhangouts3.TypedViewHolder._
-import com.thangiee.lolhangouts3.enrichments._
 import lolchat._
-import lolchat.data.Region
+import lolchat.data.{AsyncResult, Region}
 import lolchat.model._
 import riotapi.free.RiotApiOps
 import share.Message
@@ -50,30 +49,41 @@ class FriendListAct extends SessionAct with NavDrawer {
     views.fab, views.fabSheet, views.overlay, TR.color.md_white.value, TR.color.accent.value)
 
   lazy val refreshingFriendList = session.friendListStream.map(_ => if (isActVisible) refreshFriendList())
-  lazy val notifyingReceivedMsg = session.msgStream.map(msg => {
-    // todo: improve
-    // only notify when not in chat with the user that sent the msg
-    if (msg.fromId != activeFriendChat.map(_.id).getOrElse("-1")) {
-      val notif = new Notification.Builder(ctx)
-        .setSmallIcon(TR.drawable.ic_launcher.resid)
-        .setContentTitle("New Message")
-        .setContentText(msg.txt)
-        .setContentIntent(PendingIntent.getActivity(ctx, 0, ChatAct(userSummId, ???), PendingIntent.FLAG_ONE_SHOT))
-        .setStyle(new Notification.InboxStyle().setSummaryText("Open chat"))
-        .setPriority(Notification.PRIORITY_HIGH)
-        .setTicker("new message!!!")
-        .setAutoCancel(true)
-        .setLights(Color.BLUE, 300, 3000) // blue light, 300ms on, 3s off
-        .build()
-
-      notifyMgr.notify(100, notif)
-    }
-  })
+  lazy val notifyingReceivedMsg = session.msgStream.map(msg =>
+    if (msg.fromId != activeFriendChat.map(_.id).getOrElse("-1")) // only notify when not in chat with the user that sent the msg
+      mkMsgNotification(msg).map(showMsgNotifi)
+  )
 
   lazy val savingReceivedMsg = session.msgStream.map(msg => {
     val isRead = msg.fromId == activeFriendChat.map(_.id).getOrElse("-1")
     clientApi.saveMsg(Message(userSummId, msg.fromId.toInt, msg.txt, sender = false, isRead)).call()
   })
+
+  def mkMsgNotification(msg: Msg): AsyncResult[Notification] = {
+    LoLChat.run(friendById(msg.fromId)(session)).flatMap {
+      case Some(f) => AsyncResult.right {
+        val pendingIntent = PendingIntent.getActivity(ctx, 0, ChatAct(userSummId, f), PendingIntent.FLAG_ONE_SHOT)
+        val notify = new Notification.Builder(ctx)
+          .setSmallIcon(TR.drawable.ic_launcher.resid)
+          .setLargeIcon(toBitmap(TR.drawable.ic_launcher.resid))
+          .setContentTitle("New Message")
+          .setContentText(s"${f.name}: ${msg.txt}")
+          .setContentIntent(pendingIntent)
+          .setStyle(new Notification.BigTextStyle()
+            .setSummaryText(s"Open chat with ${f.name}")
+            .bigText(s"${f.name}: ${msg.txt}")
+          )
+          .setPriority(Notification.PRIORITY_HIGH)
+          .setAutoCancel(true)
+          .setLights(Color.BLUE, 300, 3000) // blue light, 300ms on, 3s off
+          .build()
+
+        notify.tickerText = s"${f.name}: ${msg.txt}"
+        notify
+      }
+      case None => AsyncResult.left(Error(404, "msg not from someone in the friends list"))
+    }
+  }
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
