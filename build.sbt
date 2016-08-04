@@ -25,6 +25,7 @@ lazy val server = project
     libraryDependencies += "org.scala-lang.modules" % "scala-java8-compat_2.11" % "0.7.0",
     libraryDependencies ++= Dependencies.serverDeps
   )
+  .enablePlugins(JavaServerAppPackaging)
   .dependsOn(share)
 
 lazy val app = project
