@@ -23,6 +23,9 @@ import lolchat._
 import lolchat.data.Region
 import lolchat.model._
 import riotapi.free.RiotApiOps
+import share.Message
+import ClientApi._
+import autowire._
 
 import scala.collection.JavaConversions._
 import scala.concurrent.{Await, Future}
@@ -33,6 +36,8 @@ class FriendListAct extends SessionAct with NavDrawer {
   lazy val views  : friend_list_act = TypedViewHolder.setContentView(this, TR.layout.friend_list_act)
   lazy val toolbar: Toolbar         = views.toolbar.rootView
 
+  private var activeFriendChat: Option[Friend] = None
+
   val selectedDrawer: DrawerItem = NavDrawer.friendList
 
   lazy val friendListAdapter  = FriendItem.adapter(session.region)
@@ -41,19 +46,36 @@ class FriendListAct extends SessionAct with NavDrawer {
   lazy val materialSheetFab = new MaterialSheetFab[Fab](
     views.fab, views.fabSheet, views.overlay, TR.color.md_white.value, TR.color.accent.value)
 
-  lazy val friendListEventHandler = session.friendListStream.map(_ => if (isActVisible) refreshFriendList())
-  lazy val msgEventHandler = session.msgStream.map(msg => {
+  lazy val refreshingFriendList = session.friendListStream.map(_ => if (isActVisible) refreshFriendList())
+  lazy val notifyingReceivedMsg = session.msgStream.map(msg => {
     // todo: improve
-    val notif = new Notification.Builder(ctx)
-      .setSmallIcon(TR.drawable.ic_launcher.resid)
-      .setContentTitle("New Message")
-      .setContentText(msg.txt)
-      .setStyle(new Notification.InboxStyle().setSummaryText("Open chat"))
-      .setPriority(Notification.PRIORITY_HIGH)
-      .build()
+    // only notify when not in chat with the user that sent the msg
+    if (msg.fromId != activeFriendChat.map(_.id).getOrElse("-1")) {
+      val notif = new Notification.Builder(ctx)
+        .setSmallIcon(TR.drawable.ic_launcher.resid)
+        .setContentTitle("New Message")
+        .setContentText(msg.txt)
+        .setStyle(new Notification.InboxStyle().setSummaryText("Open chat"))
+        .setPriority(Notification.PRIORITY_HIGH)
+        .build()
 
-    notifyMgr.notify(100, notif)
+      notifyMgr.notify(100, notif)
+    }
   })
+
+  lazy val savingReceivedMsg = CurrentUserInfo.load(session).map(user =>
+    session.msgStream.map(msg =>
+      clientApi.saveMsg(
+        Message(
+          user.summoner.id,
+          msg.fromId.toInt,
+          msg.txt,
+          sender = false,
+          read = msg.fromId == activeFriendChat.map(_.id).getOrElse("-1")
+        )
+      ).call()
+    )
+  )
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
@@ -78,6 +100,7 @@ class FriendListAct extends SessionAct with NavDrawer {
     def setupFriendsList(): Unit = {
       friendListAdapter.setOnItemClickListener(i => {
         val friend = friendListAdapter.getItem(i)
+        activeFriendChat = Some(friend)
         startActivity(ChatAct(friend))
       })
 
@@ -92,8 +115,9 @@ class FriendListAct extends SessionAct with NavDrawer {
 
     // initialize lazies
     materialSheetFab
-    friendListEventHandler
-    msgEventHandler
+    refreshingFriendList
+    notifyingReceivedMsg
+    savingReceivedMsg
 
     views.sendFriendReqBtn.onClick0 {
       def doFriendReq(name: String): Unit = {
@@ -181,6 +205,11 @@ class FriendListAct extends SessionAct with NavDrawer {
     }
   }
 
+  override def onRestart(): Unit = {
+    super.onRestart()
+    activeFriendChat = None
+  }
+
   override def onResume(): Unit = {
     super.onResume()
     refreshFriendList()
@@ -192,8 +221,9 @@ class FriendListAct extends SessionAct with NavDrawer {
 
   override def onDestroy(): Unit = {
     super.onDestroy()
-    friendListEventHandler.kill()
-    msgEventHandler.kill()
+    refreshingFriendList.kill()
+    notifyingReceivedMsg.kill()
+    savingReceivedMsg.map(_.kill())
   }
 
   def refreshFriendList(groupFilter: String = "all"): Unit = {
