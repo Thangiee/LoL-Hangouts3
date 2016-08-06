@@ -7,10 +7,10 @@ object ApiImpl extends Api with Schema[PostgresDialect, LowerCase] {
   val ctx = new JdbcContext[PostgresDialect, LowerCase]("db")
   import ctx._
 
-  def getMsgs(userId: Int, friendId: Int): Seq[Message] =
+  def getMsgsBtw(userId: Int, friendId: Int): Seq[Message] =
     ctx.run(Messages.all(userId, friendId))
 
-  def getRecentMsgs(userId: Int, friendId: Int, n: Int, onlyUnread: Boolean): Seq[Message] =
+  def getRecentMsgsBtw(userId: Int, friendId: Int, n: Int, onlyUnread: Boolean): Seq[Message] =
     if (onlyUnread) ctx.run(Messages.unreadRecentN(userId, friendId, n))
     else            ctx.run(Messages.recentN(userId, friendId, n))
 
@@ -25,4 +25,7 @@ object ApiImpl extends Api with Schema[PostgresDialect, LowerCase] {
 
   def markMsgsRead(userId: Int, friendId: Int): Long =
     ctx.run(Messages.markRead(userId, friendId))
+
+  def friendsNewestMsg(userId: Int): Map[Int, Message] =
+    ctx.run(Messages.all(userId)).groupBy(_.friendId).mapValues(_.maxBy(_.timestamp))
 }

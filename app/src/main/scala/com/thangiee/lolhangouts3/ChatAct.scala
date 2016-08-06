@@ -54,7 +54,7 @@ class ChatAct extends SessionAct {
 
     msgField.onClick0(if (msgField.hasFocus) delay(200.millis)(scrollToBottom()))
 
-    clientApi.getRecentMsgs(userSummId, friend.id.toInt, 1000, filterRead = false).call().toAsyncResult
+    clientApi.getRecentMsgsBtw(userSummId, friend.id.toInt, 1000, filterRead = false).call().toAsyncResult
       .map(msgs => runOnUi { chatMsgAdapter.addItems(msgs); scrollToBottom() })
 
     sendBtn.onClick0 {

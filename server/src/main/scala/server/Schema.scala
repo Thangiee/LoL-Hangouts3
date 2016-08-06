@@ -9,6 +9,9 @@ trait Schema[T <: SqlIdiom, S <: NamingStrategy] {
   import ctx._
 
   object Messages {
+    def all(userId: Int) =
+      quote(query[Message].filter(_.userId == lift(userId)))
+
     def all(userId: Int, friendId: Int) =
       quote(query[Message].filter(msg => msg.userId == lift(userId) && msg.friendId == lift(friendId)))
 
@@ -17,7 +20,7 @@ trait Schema[T <: SqlIdiom, S <: NamingStrategy] {
 
     def markRead(userId: Int, friendId: Int) =
       quote(all(userId, friendId).update(m => m.deleted -> true))
-    
+
     def recentN(userId: Int, friendId: Int, n: Int) =
       quote(all(userId, friendId).sortBy(_.timestamp)(Ord.desc).take(lift(n)))
 
