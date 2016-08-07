@@ -21,8 +21,9 @@ lazy val server = project
   .settings(commonSettings)
   .settings(
     version := "0.1.0",
-    scalacOptions ++=  Seq("-Xexperimental", "-Ybackend:GenBCode", "-Ydelambdafy:method", "-target:jvm-1.8", "-Yopt:l:classpath"),
-    libraryDependencies += "org.scala-lang.modules" % "scala-java8-compat_2.11" % "0.7.0",
+//    commented out settings below cause really long compile for some reason !?!
+//    scalacOptions ++=  Seq("-Xexperimental", "-Ybackend:GenBCode", "-Ydelambdafy:method", "-target:jvm-1.8", "-Yopt:l:classpath"),
+//    libraryDependencies += "org.scala-lang.modules" % "scala-java8-compat_2.11" % "0.7.0",
     libraryDependencies ++= Dependencies.serverDeps
   )
   .enablePlugins(JavaServerAppPackaging)
