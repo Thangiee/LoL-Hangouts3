@@ -1,17 +1,15 @@
 package com.thangiee.lolhangouts3
-import java.nio.ByteBuffer
 import java.util.Date
 
-import android.content.Intent
 import android.os.Bundle
 import android.support.v7.widget.{LinearLayoutManager, Toolbar}
 import android.view.ViewGroup
 import android.widget.{RelativeLayout, TextView, Toast}
 import autowire._
-import boopickle.Default._
 import com.hanhuy.android.extensions._
 import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
 import com.makeramen.roundedimageview.RoundedImageView
+import com.thangiee.metadroid.Case
 import com.thangiee.lolhangouts3.ClientApi._
 import com.thangiee.lolhangouts3.enrichments._
 import lolchat._
@@ -22,13 +20,10 @@ import share.Message
 
 import scala.concurrent.duration._
 
-class ChatAct extends SessionAct {
+@Case class ChatAct(userSummId: Int, friend: Friend) extends SessionAct {
   type RootView = RelativeLayout
   lazy val views: TypedViewHolder.chat_act = TypedViewHolder.setContentView(this, TR.layout.chat_act)
   lazy val toolbar: Toolbar = views.toolbar.rootView
-
-  lazy val userSummId = getIntent.getIntExtra("arg0", -1)
-  lazy val friend = Unpickle[Friend].fromBytes(ByteBuffer.wrap(getIntent.getByteArrayExtra("arg1")))
 
   lazy val chatMsgAdapter = ChatMessage.adapter(session, friend)
 
@@ -84,16 +79,7 @@ class ChatAct extends SessionAct {
   def scrollToBottom(): Unit = views.recyclerView.scrollToPosition(chatMsgAdapter.getCount - 2) // scroll to new message
 }
 
-object ChatAct {
-  def apply(userSummId: Int, friend: Friend)(implicit ctx: Ctx): Intent = {
-    val i = new Intent(ctx, classOf[ChatAct])
-    i.putExtra("arg0", userSummId)
-    i.putExtra("arg1", Pickle.intoBytes(friend).array())
-  }
-}
-
 object ChatMessage {
-
   def adapter(sess: Session, friend: Friend)(implicit ctx: Ctx) = new RecyclerArrayAdapter[Message](ctx) {
     val (myMsg, otherMsg) = (0, 1)
 

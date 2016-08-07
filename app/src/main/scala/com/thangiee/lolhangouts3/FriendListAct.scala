@@ -18,6 +18,7 @@ import com.hanhuy.android.extensions._
 import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
 import com.jude.easyrecyclerview.decoration.DividerDecoration
 import com.makeramen.roundedimageview.RoundedImageView
+import com.thangiee.metadroid.Case
 import com.thangiee.lolhangouts3.AuxFunctions._
 import com.thangiee.lolhangouts3.ClientApi._
 import com.thangiee.lolhangouts3.NavDrawer.DrawerItem
@@ -33,7 +34,7 @@ import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class FriendListAct extends SessionAct with NavDrawer {
+@Case class FriendListAct(userSummId: Int) extends SessionAct with NavDrawer {
   type RootView = RelativeLayout
   lazy val views  : friend_list_act = TypedViewHolder.setContentView(this, TR.layout.friend_list_act)
   lazy val toolbar: Toolbar         = views.toolbar.rootView
@@ -42,7 +43,6 @@ class FriendListAct extends SessionAct with NavDrawer {
 
   val selectedDrawer: DrawerItem = NavDrawer.friendList
 
-  lazy val userSummId = getIntent.getIntExtra("arg1", -1)
   lazy val friendListAdapter  = FriendItem.adapter(userSummId, session.region)
   lazy val friendGroupAdapter = MaterialSpinnerAdapter(Seq("All", "Online", "Offline"))
 
@@ -263,10 +263,6 @@ class FriendListAct extends SessionAct with NavDrawer {
       startActivity(androidHomeScreen)
     }
   }
-}
-
-object FriendListAct {
-  def apply(userSummId: Int)(implicit ctx: Ctx): Intent = new Intent(ctx, classOf[FriendListAct]).putExtra("arg1", userSummId)
 }
 
 object FriendItem {
