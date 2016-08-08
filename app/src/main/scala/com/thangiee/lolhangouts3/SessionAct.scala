@@ -26,7 +26,7 @@ trait SessionAct extends BaseActivity {
           e.getCause match {
             case NoSessionException() =>
               finish()
-              startActivity(LoginAct("No session found. Please log in again."))
+              startActivity(LoginAct(Some("No session found. Please log in again.")))
               android.os.Process.killProcess(android.os.Process.myPid())
               System.exit(0);
             case _ => if (oldHandler != null) oldHandler.uncaughtException(thread, throwable) else System.exit(2)

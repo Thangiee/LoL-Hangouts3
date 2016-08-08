@@ -10,10 +10,11 @@ import com.thangiee.lolhangouts3.enrichments._
 import lolchat._
 import lolchat.model._
 import boopickle.Default._
+import com.thangiee.metadroid.Case
 
 import scala.concurrent.duration._
 
-class LoginAct extends BaseActivity {
+@Case class LoginAct(errMsg: Option[String]) extends BaseActivity {
   type RootView = RelativeLayout
   lazy val selectedRegion   = RegionItem.loadSelected
   lazy val views: login_act = TypedViewHolder.setContentView(this, TR.layout.login_act)
@@ -24,7 +25,7 @@ class LoginAct extends BaseActivity {
     getSupportActionBar.setTitle(selectedRegion.map(_.name).getOrElse("Login"))
     toolbar.setNavigationOnClickListener(_ => startActivity(new Intent(this, classOf[RegionSelectionAct])))
 
-    Option(getIntent.getStringExtra("errMsg")).foreach(errMsg =>
+    errMsg.foreach(errMsg =>
       new MaterialDialog.Builder(ctx)
         .title("Error")
         .content(errMsg)
@@ -83,8 +84,7 @@ class LoginAct extends BaseActivity {
 }
 
 object LoginAct {
-  def apply()(implicit ctx: Ctx): Intent = new Intent(ctx, classOf[LoginAct])
-  def apply(errMsg: String)(implicit ctx: Ctx): Intent = new Intent(ctx, classOf[LoginAct]).putExtra("errMsg", errMsg)
+  def apply()(implicit ctx: Ctx): Intent = LoginAct(None)
 }
 
 case class LoginConfig(user: String, passwd: String, offlineLogin: Boolean)

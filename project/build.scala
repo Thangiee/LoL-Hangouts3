@@ -77,7 +77,7 @@ object Dependencies {
       "com.afollestad.material-dialogs" % "core" % "0.8.6.2",
       "com.gordonwong" % "material-sheet-fab" % "1.2.1",
       "me.himanshusoni.chatmessageview" % "chat-message-view" % "1.0.3",
-      "com.thangiee" %% "metadroid" % "0.1.0"
+      "com.thangiee" %% "metadroid" % "0.1.1"
     )
   }
 
