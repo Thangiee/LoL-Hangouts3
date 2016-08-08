@@ -19,7 +19,7 @@ trait Schema[T <: SqlIdiom, S <: NamingStrategy] {
       quote(all(userId, friendId).update(m => m.deleted -> true))
 
     def markRead(userId: Int, friendId: Int) =
-      quote(all(userId, friendId).update(m => m.deleted -> true))
+      quote(all(userId, friendId).update(m => m.read -> true))
 
     def recentN(userId: Int, friendId: Int, n: Int) =
       quote(all(userId, friendId).sortBy(_.timestamp)(Ord.desc).take(lift(n)))
