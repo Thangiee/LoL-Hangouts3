@@ -1,8 +1,8 @@
 package com.thangiee.lolhangouts3
 
-import android.app.{Notification, PendingIntent}
+import android.app.PendingIntent
 import android.content.Intent
-import android.graphics.{Color, Typeface}
+import android.graphics.Typeface
 import android.os.Bundle
 import android.support.v7.app.ActionBar
 import android.support.v7.widget.{LinearLayoutManager, Toolbar}
@@ -18,85 +18,49 @@ import com.hanhuy.android.extensions._
 import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
 import com.jude.easyrecyclerview.decoration.DividerDecoration
 import com.makeramen.roundedimageview.RoundedImageView
-import com.thangiee.metadroid.Case
-import com.thangiee.lolhangouts3.FriendListAct._
 import com.thangiee.lolhangouts3.AuxFunctions._
 import com.thangiee.lolhangouts3.ClientApi._
+import com.thangiee.lolhangouts3.FriendListAct._
 import com.thangiee.lolhangouts3.NavDrawer.DrawerItem
 import com.thangiee.lolhangouts3.TypedViewHolder._
 import com.thangiee.lolhangouts3.enrichments._
+import com.thangiee.metadroid.Case
 import lolchat._
 import lolchat.data.{AsyncResult, Region}
 import lolchat.model._
 import riotapi.free.RiotApiOps
 import share.Message
-import scalacache._
-import guava._
 
 import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
+import scalacache._
+import scalacache.guava._
 
-@Case class FriendListAct(userSummId: Int) extends SessionAct with NavDrawer {
+@Case class FriendListAct(userSummId: Int) extends SessionAct with NavDrawer with RefreshFndList with NotifyReceivedMsg with SaveReceivedMsg {
   type RootView = RelativeLayout
   lazy val views  : friend_list_act = TypedViewHolder.setContentView(this, TR.layout.friend_list_act)
   lazy val toolbar: Toolbar         = views.toolbar.rootView
 
-  private var activeFriendChat: Option[Friend] = None
-
+  protected var activeFriendChat: Option[Friend] = None
   val selectedDrawer: DrawerItem = NavDrawer.friendList
 
+  lazy val friendGroupSpinner: toolbar_spinner = TypedViewHolder.inflate(getLayoutInflater, TR.layout.toolbar_spinner, toolbar, attach = false)
   lazy val friendListAdapter  = FriendItem.adapter(userSummId, session.region)
   lazy val friendGroupAdapter = MaterialSpinnerAdapter(Seq("All", "Online", "Offline"))
+  lazy val materialSheetFab = new MaterialSheetFab[Fab](views.fab, views.fabSheet, views.overlay, TR.color.md_white.value, TR.color.accent.value)
 
-  lazy val materialSheetFab = new MaterialSheetFab[Fab](
-    views.fab, views.fabSheet, views.overlay, TR.color.md_white.value, TR.color.accent.value)
+  def msgNotificationPendingIntent(f: Friend): PendingIntent =
+    PendingIntent.getActivity(ctx, 0, ChatAct(userSummId, f), PendingIntent.FLAG_ONE_SHOT)
 
-  lazy val refreshingFriendList = session.friendListStream.map(_ => if (isActVisible) refreshFriendList())
-  lazy val cachingNewMsg = session.msgStream.map(msg => {
-    newestMsgsCache.put(msg.fromId)(Message(userSummId, msg.fromId.toInt, msg.txt, sender = false, read = false))
-    refreshFriendList()
-  })
-  lazy val notifyingReceivedMsg = session.msgStream.map(msg => {
-    if (msg.fromId != activeFriendChat.map(_.id).getOrElse("-1")) // only notify when not in chat with the user that sent the msg
-      mkMsgNotification(msg).map(showMsgNotifi)
-  })
-
-  lazy val savingReceivedMsg = session.msgStream.map(msg => {
-    val isRead = msg.fromId == activeFriendChat.map(_.id).getOrElse("-1")
-    clientApi.saveMsg(Message(userSummId, msg.fromId.toInt, msg.txt, sender = false, isRead)).call()
-  })
-
-  def mkMsgNotification(msg: Msg): AsyncResult[Notification] = {
-    LoLChat.run(friendById(msg.fromId)(session)).flatMap {
-      case Some(f) => AsyncResult.right {
-        val pendingIntent = PendingIntent.getActivity(ctx, 0, ChatAct(userSummId, f), PendingIntent.FLAG_ONE_SHOT)
-        val notify = new Notification.Builder(ctx)
-          .setSmallIcon(TR.drawable.ic_launcher.resid)
-          .setLargeIcon(toBitmap(TR.drawable.ic_launcher.resid))
-          .setContentTitle("New Message")
-          .setContentText(s"${f.name}: ${msg.txt}")
-          .setContentIntent(pendingIntent)
-          .setStyle(new Notification.BigTextStyle()
-            .setSummaryText(s"Open chat with ${f.name}")
-            .bigText(s"${f.name}: ${msg.txt}")
-          )
-          .setPriority(Notification.PRIORITY_HIGH)
-          .setAutoCancel(true)
-          .setLights(Color.BLUE, 300, 3000) // blue light, 300ms on, 3s off
-          .build()
-
-        notify.tickerText = s"${f.name}: ${msg.txt}"
-        notify
-      }
-      case None => AsyncResult.left(Error(404, "msg not from someone in the friends list"))
-    }
+  def saveMsg(mkMessage: (userSummId) => Message): Future[Unit] = {
+    val msg = mkMessage(userSummId)
+    clientApi.saveMsg(msg).call()
+    newestMsgsCache.put(msg.friendId.toString)(msg)
   }
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
-    val friendGroupSpinner: toolbar_spinner =
-      TypedViewHolder.inflate(getLayoutInflater, TR.layout.toolbar_spinner, toolbar, attach = false)
 
     def setupFriendGroupsToolbarSpinner(): Unit = {
       // setup the spinner in the toolbar to filter friend list by groups
@@ -106,8 +70,7 @@ import scala.concurrent.{Await, Future}
         (_.setAdapter(friendGroupAdapter)) +
         (_.setOnItemSelectedListener(new OnItemSelectedListener {
           def onNothingSelected(adapterView: AdapterView[_]): Unit = {}
-          def onItemSelected(a: AdapterView[_], v: View, position :Int,  l :Long): Unit =
-            refreshFriendList(friendGroupAdapter.getItem(position))
+          def onItemSelected(a: AdapterView[_], v: View, position :Int,  l :Long): Unit = refreshFriendList()
         }))
 
       LoLChat.run(groupNames(session)).map(groups => friendGroupAdapter.addItems(groups.filter(_ != "**Default")))
@@ -128,13 +91,7 @@ import scala.concurrent.{Await, Future}
 
     setupFriendGroupsToolbarSpinner()
     setupFriendsList()
-
-    // initialize lazies
-    materialSheetFab
-    refreshingFriendList
-    notifyingReceivedMsg
-    savingReceivedMsg
-    cachingNewMsg
+    materialSheetFab // initialize
 
     views.sendFriendReqBtn.onClick0 {
       def doFriendReq(name: String): Unit = {
@@ -189,7 +146,7 @@ import scala.concurrent.{Await, Future}
       def doMoveFriendsToGroup(names: Seq[String], group: String): Unit = {
         Future.sequence(names.map(name => LoLChat.run(moveFriendToGroup(name, group)(session)).value))
           .foreach { _ =>
-            refreshFriendList(groupFilter = friendGroupSpinner.spinner.getSelectedItem.toString)
+            refreshFriendList()
             longSnackbar(views.coordinator, s"${names.size} friends moved to $group.").show()
           }
       }
@@ -241,16 +198,12 @@ import scala.concurrent.{Await, Future}
 
   override def onDestroy(): Unit = {
     super.onDestroy()
-    refreshingFriendList.kill()
-    notifyingReceivedMsg.kill()
-    savingReceivedMsg.kill()
-    cachingNewMsg.kill()
     newestMsgsCache.removeAll()
   }
 
-  def refreshFriendList(groupFilter: String = "all"): Unit = {
-    println("refreshFriendList")
+  def refreshFriendList(): Unit = {
     LoLChat.run(friends(session)).map(fs => runOnUi {
+      val groupFilter = friendGroupSpinner.spinner.getSelectedItem.toString
       val filteredFriends = groupFilter.toLowerCase() match {
         case "all"     => fs
         case "online"  => fs.filter(_.isOnline)
@@ -279,7 +232,7 @@ import scala.concurrent.{Await, Future}
 }
 
 object FriendListAct {
-  implicit val scalaCache = ScalaCache(GuavaCache())
+  private implicit val scalaCache = ScalaCache(GuavaCache())
   val newestMsgsCache: TypedApi[Message, NoSerialization] = typed[Message, NoSerialization]
 }
 
@@ -287,46 +240,44 @@ object FriendItem {
 
   def adapter(userId: Int, region: Region)(implicit ctx: Ctx) =
     new RecyclerArrayAdapter[Friend](ctx) {
-      def OnCreateViewHolder(viewGroup: ViewGroup, i: Int): BaseViewHolder[_] =
-        new BaseViewHolder[Friend](viewGroup, TR.layout.friend_line_item.id) {
-          val avatarImg = $[RoundedImageView](R.id.avatarImg)
-          val nameTv    = $[TextView](R.id.nameTv)
-          val statusTv  = $[TextView](R.id.statusTv)
-          val msgTv     = $[TextView](R.id.msgTv)
+      def OnCreateViewHolder(viewGroup: ViewGroup, i: Int) = new BaseViewHolder[Friend](viewGroup, TR.layout.friend_line_item.id) {
+        val avatarImg = $[RoundedImageView](R.id.avatarImg)
+        val nameTv    = $[TextView](R.id.nameTv)
+        val statusTv  = $[TextView](R.id.statusTv)
+        val msgTv     = $[TextView](R.id.msgTv)
 
-          override def setData(friend: Friend): Unit = {
-            avatarImg.loadSummIcon(friend.name, region, friend.profileIconId)
-            nameTv.setText(friend.name)
-            newestMsgsCache.get(friend.id).map {
-              case Some(msg) => runOnUi {
-                println(msg)
-                msgTv.setText(if (msg.sender) s"You: ${msg.text}" else s"${msg.text}")
-                if (!msg.read) msgTv.setTypeface(null, Typeface.BOLD)
-              }
-              case None => runOnUi(msgTv.setText(""))
+        override def setData(friend: Friend): Unit = {
+          avatarImg.loadSummIcon(friend.name, region, friend.profileIconId)
+          nameTv.setText(friend.name)
+          newestMsgsCache.get(friend.id).map {
+            case Some(msg) => runOnUi {
+              msgTv.setText(if (msg.sender) s"You: ${msg.text}" else s"${msg.text}")
+              if (!msg.read) msgTv.setTypeface(null, Typeface.BOLD)
             }
-
-            if (friend.isOnline) {
-              friend.chatMode match {
-                case Chat => statusTv.textWithColor("Online", TR.color.md_green_500)
-                case AFK => statusTv.textWithColor("Away", TR.color.md_red_500)
-                case Busy =>
-                  val orangeTxt = (txt: String) => (tv: TextView) => tv.textWithColor(txt, TR.color.md_orange_500)
-                  friend.gameStatus match {
-                    case Some("inGame") =>
-                      val gameTime = Math.round((System.currentTimeMillis() - friend.gameStartTime.getOrElse(0L)) / 60000)
-                      statusTv + orangeTxt(s"In Game: ${friend.selectedChamp.getOrElse("???")} ($gameTime mins)")
-                    case Some("championSelect") => statusTv + orangeTxt("Champion Selection")
-                    case Some("inQueue") => statusTv + orangeTxt("In Queue")
-                    case Some(other) => statusTv + orangeTxt(other)
-                    case None => statusTv + orangeTxt("Busy")
-                  }
-              }
-            } else {
-              statusTv.textWithColor("Offline", TR.color.md_grey_500)
-            }
-
+            case None => runOnUi(msgTv.setText(""))
           }
+
+          if (friend.isOnline) {
+            friend.chatMode match {
+              case Chat => statusTv.textWithColor("Online", TR.color.md_green_500)
+              case AFK => statusTv.textWithColor("Away", TR.color.md_red_500)
+              case Busy =>
+                val orangeTxt = (txt: String) => (tv: TextView) => tv.textWithColor(txt, TR.color.md_orange_500)
+                friend.gameStatus match {
+                  case Some("inGame") =>
+                    val gameTime = Math.round((System.currentTimeMillis() - friend.gameStartTime.getOrElse(0L)) / 60000)
+                    statusTv + orangeTxt(s"In Game: ${friend.selectedChamp.getOrElse("???")} ($gameTime mins)")
+                  case Some("championSelect") => statusTv + orangeTxt("Champion Selection")
+                  case Some("inQueue") => statusTv + orangeTxt("In Queue")
+                  case Some(other) => statusTv + orangeTxt(other)
+                  case None => statusTv + orangeTxt("Busy")
+                }
+            }
+          } else {
+            statusTv.textWithColor("Offline", TR.color.md_grey_500)
+          }
+
         }
-  }
+      }
+    }
 }
