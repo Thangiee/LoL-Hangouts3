@@ -65,6 +65,11 @@ import scala.concurrent.duration._
     }
   }
 
+  override def onResume(): Unit = {
+    super.onResume()
+    clientApi.markMsgsRead(userSummId, friend.id.toInt).call()
+  }
+
   override def onDestroy(): Unit = {
     super.onDestroy()
     chatMsgAdapter.clear()

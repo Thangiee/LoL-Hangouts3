@@ -19,6 +19,7 @@ import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
 import com.jude.easyrecyclerview.decoration.DividerDecoration
 import com.makeramen.roundedimageview.RoundedImageView
 import com.thangiee.metadroid.Case
+import com.thangiee.lolhangouts3.FriendListAct._
 import com.thangiee.lolhangouts3.AuxFunctions._
 import com.thangiee.lolhangouts3.ClientApi._
 import com.thangiee.lolhangouts3.NavDrawer.DrawerItem
@@ -29,6 +30,8 @@ import lolchat.data.{AsyncResult, Region}
 import lolchat.model._
 import riotapi.free.RiotApiOps
 import share.Message
+import scalacache._
+import guava._
 
 import scala.collection.JavaConversions._
 import scala.concurrent.duration._
@@ -50,8 +53,11 @@ import scala.concurrent.{Await, Future}
     views.fab, views.fabSheet, views.overlay, TR.color.md_white.value, TR.color.accent.value)
 
   lazy val refreshingFriendList = session.friendListStream.map(_ => if (isActVisible) refreshFriendList())
+  lazy val cachingNewMsg = session.msgStream.map(msg => {
+    newestMsgsCache.put(msg.fromId)(Message(userSummId, msg.fromId.toInt, msg.txt, sender = false, read = false))
+    refreshFriendList()
+  })
   lazy val notifyingReceivedMsg = session.msgStream.map(msg => {
-    friendListAdapter.refreshFriendsNewestMsg()
     if (msg.fromId != activeFriendChat.map(_.id).getOrElse("-1")) // only notify when not in chat with the user that sent the msg
       mkMsgNotification(msg).map(showMsgNotifi)
   })
@@ -128,6 +134,7 @@ import scala.concurrent.{Await, Future}
     refreshingFriendList
     notifyingReceivedMsg
     savingReceivedMsg
+    cachingNewMsg
 
     views.sendFriendReqBtn.onClick0 {
       def doFriendReq(name: String): Unit = {
@@ -222,7 +229,10 @@ import scala.concurrent.{Await, Future}
 
   override def onResume(): Unit = {
     super.onResume()
-    refreshFriendList()
+    clientApi.friendsNewestMsg(userSummId).call().toAsyncResult.map(msgs => {
+      msgs.foreach { case (id, msg) => newestMsgsCache.put(id.toString)(msg) }
+      refreshFriendList()
+    })
   }
 
   override def onPause(): Unit = {
@@ -234,9 +244,12 @@ import scala.concurrent.{Await, Future}
     refreshingFriendList.kill()
     notifyingReceivedMsg.kill()
     savingReceivedMsg.kill()
+    cachingNewMsg.kill()
+    newestMsgsCache.removeAll()
   }
 
   def refreshFriendList(groupFilter: String = "all"): Unit = {
+    println("refreshFriendList")
     LoLChat.run(friends(session)).map(fs => runOnUi {
       val filteredFriends = groupFilter.toLowerCase() match {
         case "all"     => fs
@@ -265,54 +278,55 @@ import scala.concurrent.{Await, Future}
   }
 }
 
+object FriendListAct {
+  implicit val scalaCache = ScalaCache(GuavaCache())
+  val newestMsgsCache: TypedApi[Message, NoSerialization] = typed[Message, NoSerialization]
+}
+
 object FriendItem {
 
-  def adapter(userId: Int, region: Region)(implicit ctx: Ctx) = new RecyclerArrayAdapter[Friend](ctx) {
-    private var friendsMsgs: AsyncResult[Map[Int, Message]] = clientApi.friendsNewestMsg(userId).call().toAsyncResult
+  def adapter(userId: Int, region: Region)(implicit ctx: Ctx) =
+    new RecyclerArrayAdapter[Friend](ctx) {
+      def OnCreateViewHolder(viewGroup: ViewGroup, i: Int): BaseViewHolder[_] =
+        new BaseViewHolder[Friend](viewGroup, TR.layout.friend_line_item.id) {
+          val avatarImg = $[RoundedImageView](R.id.avatarImg)
+          val nameTv    = $[TextView](R.id.nameTv)
+          val statusTv  = $[TextView](R.id.statusTv)
+          val msgTv     = $[TextView](R.id.msgTv)
 
-    def refreshFriendsNewestMsg(): Unit = friendsMsgs = clientApi.friendsNewestMsg(userId).call().toAsyncResult
-
-    def OnCreateViewHolder(viewGroup: ViewGroup, i: Int): BaseViewHolder[_] =
-      new BaseViewHolder[Friend](viewGroup, TR.layout.friend_line_item.id) {
-        val avatarImg = $[RoundedImageView](R.id.avatarImg)
-        val nameTv    = $[TextView](R.id.nameTv)
-        val statusTv  = $[TextView](R.id.statusTv)
-        val msgTv     = $[TextView](R.id.msgTv)
-
-        override def setData(friend: Friend): Unit = {
-          avatarImg.loadSummIcon(friend.name, region, friend.profileIconId)
-          nameTv.setText(friend.name)
-          friendsMsgs.map(msgs => {
-            msgs.get(friend.id.toInt) match {
+          override def setData(friend: Friend): Unit = {
+            avatarImg.loadSummIcon(friend.name, region, friend.profileIconId)
+            nameTv.setText(friend.name)
+            newestMsgsCache.get(friend.id).map {
               case Some(msg) => runOnUi {
+                println(msg)
                 msgTv.setText(if (msg.sender) s"You: ${msg.text}" else s"${msg.text}")
                 if (!msg.read) msgTv.setTypeface(null, Typeface.BOLD)
               }
               case None => runOnUi(msgTv.setText(""))
             }
-          })
 
-          if (friend.isOnline) {
-            friend.chatMode match {
-              case Chat => statusTv.textWithColor("Online", TR.color.md_green_500)
-              case AFK => statusTv.textWithColor("Away", TR.color.md_red_500)
-              case Busy =>
-                val orangeTxt = (txt: String) => (tv: TextView) => tv.textWithColor(txt, TR.color.md_orange_500)
-                friend.gameStatus match {
-                  case Some("inGame") =>
-                    val gameTime = Math.round((System.currentTimeMillis() - friend.gameStartTime.getOrElse(0L)) / 60000)
-                    statusTv + orangeTxt(s"In Game: ${friend.selectedChamp.getOrElse("???")} ($gameTime mins)")
-                  case Some("championSelect") => statusTv + orangeTxt("Champion Selection")
-                  case Some("inQueue") => statusTv + orangeTxt("In Queue")
-                  case Some(other) => statusTv + orangeTxt(other)
-                  case None => statusTv + orangeTxt("Busy")
-                }
+            if (friend.isOnline) {
+              friend.chatMode match {
+                case Chat => statusTv.textWithColor("Online", TR.color.md_green_500)
+                case AFK => statusTv.textWithColor("Away", TR.color.md_red_500)
+                case Busy =>
+                  val orangeTxt = (txt: String) => (tv: TextView) => tv.textWithColor(txt, TR.color.md_orange_500)
+                  friend.gameStatus match {
+                    case Some("inGame") =>
+                      val gameTime = Math.round((System.currentTimeMillis() - friend.gameStartTime.getOrElse(0L)) / 60000)
+                      statusTv + orangeTxt(s"In Game: ${friend.selectedChamp.getOrElse("???")} ($gameTime mins)")
+                    case Some("championSelect") => statusTv + orangeTxt("Champion Selection")
+                    case Some("inQueue") => statusTv + orangeTxt("In Queue")
+                    case Some(other) => statusTv + orangeTxt(other)
+                    case None => statusTv + orangeTxt("Busy")
+                  }
+              }
+            } else {
+              statusTv.textWithColor("Offline", TR.color.md_grey_500)
             }
-          } else {
-            statusTv.textWithColor("Offline", TR.color.md_grey_500)
-          }
 
+          }
         }
-      }
   }
 }
