@@ -29,7 +29,6 @@ case class Message(
   text: String,
   sender: Boolean = true,
   read: Boolean = true,
-  deleted: Boolean = false,
   timestamp: Date = new Date()
 )
 

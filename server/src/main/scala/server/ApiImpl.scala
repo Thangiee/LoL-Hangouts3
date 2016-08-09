@@ -21,7 +21,7 @@ object ApiImpl extends Api with Schema[PostgresDialect, LowerCase] {
     ctx.run(quote(query[Message]).insert)(msgs.toList)
 
   def deleteMsgs(userId: Int, friendId: Int): Long =
-    ctx.run(Messages.markDeleted(userId, friendId))
+    ctx.run(Messages.delete(userId, friendId))
 
   def markMsgsRead(userId: Int, friendId: Int): Long =
     ctx.run(Messages.markRead(userId, friendId))

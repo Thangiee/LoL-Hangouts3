@@ -23,8 +23,8 @@ class DBSpec extends BaseSpec with Schema[H2Dialect, LowerCase] {
     forAll { msgs: List[Message] =>
       ctx.run(quote(query[Message].delete))
       ctx.run(quote(query[Message].insert))(msgs)
-      ctx.run(Messages.markDeleted(aliceId, bobId))
-      ctx.run(Messages.all(aliceId, bobId)).foreach(_.deleted should be(true))
+      ctx.run(Messages.delete(aliceId, bobId))
+      ctx.run(Messages.all(aliceId, bobId)).size should be(0)
     }
   }
 

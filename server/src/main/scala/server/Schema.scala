@@ -15,8 +15,8 @@ trait Schema[T <: SqlIdiom, S <: NamingStrategy] {
     def all(userId: Int, friendId: Int) =
       quote(query[Message].filter(msg => msg.userId == lift(userId) && msg.friendId == lift(friendId)))
 
-    def markDeleted(userId: Int, friendId: Int) =
-      quote(all(userId, friendId).update(m => m.deleted -> true))
+    def delete(userId: Int, friendId: Int) =
+      quote(all(userId, friendId).delete)
 
     def markRead(userId: Int, friendId: Int) =
       quote(all(userId, friendId).update(m => m.read -> true))

@@ -3,15 +3,16 @@ import java.util.Date
 
 import android.os.Bundle
 import android.support.v7.widget.{LinearLayoutManager, Toolbar}
-import android.view.ViewGroup
+import android.view.{Menu, MenuItem, ViewGroup}
 import android.widget.{RelativeLayout, TextView, Toast}
 import autowire._
+import com.afollestad.materialdialogs.{DialogAction, MaterialDialog}
 import com.hanhuy.android.extensions._
 import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
 import com.makeramen.roundedimageview.RoundedImageView
-import com.thangiee.metadroid.Case
 import com.thangiee.lolhangouts3.ClientApi._
 import com.thangiee.lolhangouts3.enrichments._
+import com.thangiee.metadroid.Case
 import lolchat._
 import lolchat.data.Region
 import lolchat.model._
@@ -74,6 +75,32 @@ import scala.concurrent.duration._
     super.onDestroy()
     chatMsgAdapter.clear()
     showReceivingMsg.kill()
+  }
+
+  override def onCreateOptionsMenu(menu: Menu): Boolean = {
+    getMenuInflater.inflate(R.menu.delete, menu)
+    true
+  }
+
+  override def onOptionsItemSelected(item: MenuItem): Boolean = {
+    item.getItemId match {
+      case R.id.menu_delete => showDeleteMessageDialog(); true
+      case _ => super.onOptionsItemSelected(item)
+    }
+  }
+
+  def showDeleteMessageDialog(): Unit = {
+    new MaterialDialog.Builder(ctx)
+      .title(R.string.dialog_delete_title)
+      .content(R.string.dialog_delete_message)
+      .positiveText("Delete")
+      .negativeText("Cancel")
+      .onPositive((_: MaterialDialog, _: DialogAction) =>
+        clientApi.deleteMsgs(userSummId, friend.id.toInt).call().toAsyncResult
+          .leftMap(err => longSnackbar(s"Fail to delete messages: ${err.msg}").show())
+          .map(_ => runOnUi(chatMsgAdapter.clearAllItems()))
+      )
+      .show()
   }
 
   def addMessageToChatView(message: Message): Unit = {

@@ -50,15 +50,6 @@ import scalacache.guava._
   lazy val friendGroupAdapter = MaterialSpinnerAdapter(Seq("All", "Online", "Offline"))
   lazy val materialSheetFab = new MaterialSheetFab[Fab](views.fab, views.fabSheet, views.overlay, TR.color.md_white.value, TR.color.accent.value)
 
-  def msgNotificationPendingIntent(f: Friend): PendingIntent =
-    PendingIntent.getActivity(ctx, 0, ChatAct(userSummId, f), PendingIntent.FLAG_ONE_SHOT)
-
-  def saveMsg(mkMessage: (userSummId) => Message): Future[Unit] = {
-    val msg = mkMessage(userSummId)
-    clientApi.saveMsg(msg).call()
-    newestMsgsCache.put(msg.friendId.toString)(msg)
-  }
-
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
 
@@ -187,6 +178,7 @@ import scalacache.guava._
   override def onResume(): Unit = {
     super.onResume()
     clientApi.friendsNewestMsg(userSummId).call().toAsyncResult.map(msgs => {
+      newestMsgsCache.removeAll()
       msgs.foreach { case (id, msg) => newestMsgsCache.put(id.toString)(msg) }
       refreshFriendList()
     })
@@ -199,6 +191,15 @@ import scalacache.guava._
   override def onDestroy(): Unit = {
     super.onDestroy()
     newestMsgsCache.removeAll()
+  }
+
+  def msgNotificationPendingIntent(f: Friend): PendingIntent =
+    PendingIntent.getActivity(ctx, 0, ChatAct(userSummId, f), PendingIntent.FLAG_ONE_SHOT)
+
+  def saveMsg(mkMessage: (userSummId) => Message): Future[Unit] = {
+    val msg = mkMessage(userSummId)
+    clientApi.saveMsg(msg).call()
+    newestMsgsCache.put(msg.friendId.toString)(msg)
   }
 
   def refreshFriendList(): Unit = {

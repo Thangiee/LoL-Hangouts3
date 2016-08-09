@@ -61,6 +61,7 @@ object enrichments {
     def insertItem(data: T, index: Int) = { adapter.insert(data, index); adapter.notifyDataSetChanged() }
     def addItem(data: T) = { adapter.add(data); adapter.notifyDataSetChanged() }
     def addItems(data: Seq[T]) = { adapter.addAll(data); adapter.notifyDataSetChanged() }
+    def clearAllItems() = { adapter.clear(); adapter.notifyDataSetChanged() }
   }
 
   implicit class RichToolbar(val tb: Toolbar) extends AnyVal {
