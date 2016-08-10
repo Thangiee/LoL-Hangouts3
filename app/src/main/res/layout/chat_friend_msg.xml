@@ -14,6 +14,8 @@
         android:layout_width="52dp"
         android:layout_height="52dp"
         app:riv_corner_radius="52dp"
+        app:riv_border_color="@color/md_yellow_a400"
+        app:riv_border_width="2dp"
         android:paddingRight="8dp"
         android:id="@+id/summImg"
         />
@@ -24,8 +26,8 @@
         android:layout_height="wrap_content"
         app:cmv_arrowGravity="start"
         app:cmv_arrowPosition="left"
-        app:cmv_backgroundColor="#8800bcd4"
-        app:cmv_backgroundColorPressed="#ff00bcd4"
+        app:cmv_backgroundColor="@color/friend_msg_bg"
+        app:cmv_backgroundColorPressed="@color/friend_msg_bg"
         app:cmv_cornerRadius="3dp"
         app:cmv_showArrow="true">
 
@@ -38,12 +40,16 @@
                 android:id="@+id/msgTv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/friend_chat_msg_txt"
+                android:textAppearance="?android:attr/textAppearanceMedium"
                 />
 
             <TextView
                 android:id="@+id/timestampTv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/friend_chat_msg_time"
+                android:textAppearance="?android:attr/textAppearanceSmall"
                 />
 
         </LinearLayout>

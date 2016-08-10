@@ -1,16 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#2196F3</color>
-    <color name="primary_dark">#1976D2</color>
-    <color name="primary_light">#BBDEFB</color>
-    <color name="accent">#FF9800</color>
-    <color name="primary_text">#212121</color>
-    <color name="secondary_text">#727272</color>
+    <color name="primary">@color/md_teal_700</color>
+    <color name="primary_dark">@color/md_teal_900</color>
+    <color name="primary_light">@color/md_teal_500</color>
+    <color name="accent">@color/md_deep_orange_a400</color>
+    <color name="screen_bg">#2d3c3f</color>
+    <!--<color name="primary_text">@color/md_teal_300</color>-->
+    <!--<color name="secondary_text">@color/md_teal_500</color>-->
+    <color name="primary_text">@color/md_blue_grey_50</color>
+    <color name="secondary_text">@color/md_blue_grey_100</color>
     <color name="icons">#FFFFFF</color>
-    <color name="divider">#B6B6B6</color>
+    <color name="divider">#2a3234</color>
     <color name="screen_gray_bg">#ffe5e5e5</color>
 
     <color name="transparent_status_bar">#99000000</color>
 
     <color name="nav_icon">@color/md_white</color>
+
+    <color name="status_online">@color/md_light_green_a400</color>
+    <color name="status_offline">@color/md_blue_grey_500</color>
+    <color name="status_away">@color/md_red_a400</color>
+    <color name="status_busy">@color/md_orange_a400</color>
+
+    <color name="login_btn_normal">@color/accent</color>
+    <color name="login_btn_error">@color/md_red_a400</color>
+    <color name="login_btn_succ">@color/md_light_green_a400</color>
+
+    <color name="my_msg_bg">@color/primary</color>
+    <color name="my_chat_msg_txt">@color/md_blue_grey_50</color>
+    <color name="my_chat_msg_time">@color/md_blue_grey_100</color>
+
+    <color name="friend_msg_bg">@color/md_blue_grey_100</color>
+    <color name="friend_chat_msg_txt">@color/md_teal_500</color>
+    <color name="friend_chat_msg_time">@color/md_teal_600</color>
+
+    <color name="msg_read">@color/md_blue_grey_500</color>
+    <color name="msg_unread">@color/md_light_blue_a400</color>
+
+    <color name="nav_drawer_icon">@color/md_teal_a700</color>
+    <color name="nav_drawer_icon_selected">@color/accent</color>
+
+    <!-- MaterialDrawer DEFAULT colors -->
+    <color name="material_drawer_background">@color/screen_bg</color>
+    <!-- Material DEFAULT text / items colors -->
+    <color name="material_drawer_primary_text">@color/primary_text</color>
+    <color name="material_drawer_secondary_text">@color/secondary_text</color>
+    <color name="material_drawer_divider">@color/divider</color>
+    <color name="material_drawer_primary_icon">@color/nav_drawer_icon</color>
+    <!-- Material DEFAULT drawer colors -->
+    <color name="material_drawer_selected">@color/primary_dark</color>
+    <color name="material_drawer_selected_text">@color/accent</color>
+    <color name="material_drawer_header_selection_text">@color/primary_text</color>
 </resources>

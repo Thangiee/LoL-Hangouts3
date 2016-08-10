@@ -7,8 +7,7 @@ import android.support.v7.widget.RecyclerView.ViewHolder
 import android.view.View
 import android.widget.ImageView
 import cats.implicits.futureInstance
-import com.afollestad.materialdialogs.{DialogAction, MaterialDialog}
-import com.afollestad.materialdialogs.MaterialDialog.{InputCallback, SingleButtonCallback}
+import com.afollestad.materialdialogs.MaterialDialog
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.mikepenz.materialdrawer.model._
@@ -16,9 +15,9 @@ import com.mikepenz.materialdrawer.model.interfaces.{IDrawerItem, IProfile}
 import com.mikepenz.materialdrawer.util.{AbstractDrawerImageLoader, DrawerImageLoader}
 import com.mikepenz.materialdrawer.{AccountHeader, AccountHeaderBuilder, Drawer, DrawerBuilder}
 import com.thangiee.lolhangouts3.NavDrawer._
-import enrichments._
-import lolchat.{LoLChat, ops}
+import com.thangiee.lolhangouts3.enrichments._
 import lolchat.model._
+import lolchat.{LoLChat, ops}
 
 trait NavDrawer extends SessionAct {
 
@@ -32,9 +31,9 @@ trait NavDrawer extends SessionAct {
     circle
   }
 
-  private lazy val greenCircle = colorCircle(TR.color.md_light_green_500)
-  private lazy val redCircle = colorCircle(TR.color.md_red_500)
-  private lazy val greyCircle = colorCircle(TR.color.md_grey_500)
+  private lazy val greenCircle = colorCircle(TR.color.status_online)
+  private lazy val redCircle = colorCircle(TR.color.status_away)
+  private lazy val greyCircle = colorCircle(TR.color.status_offline)
 
   private lazy val appearanceStatus =
     new ExpandableDrawerItem().withName("Online").withIcon(greenCircle).withSelectable(false).withSubItems(
@@ -58,17 +57,17 @@ trait NavDrawer extends SessionAct {
     .withAccountHeader(header)
     .withToolbar(toolbar)
     .addDrawerItems(
-      new PrimaryDrawerItem().withIdentifier(friendList.id).withName("Friend List").withIcon(TR.drawable.ic_list.value),
-      new PrimaryDrawerItem().withIdentifier(myProfile.id).withName("My Profile").withIcon(TR.drawable.ic_person.value),
-      new PrimaryDrawerItem().withIdentifier(search.id).withName("Search Summoner").withIcon(TR.drawable.ic_search.value),
-      new PrimaryDrawerItem().withIdentifier(scouter.id).withName("Game Scouter").withIcon(TR.drawable.ic_videogame_asset.value),
+      new PrimaryDrawerItem().withIdentifier(friendList.id).withName("Friend List").withIconAppColor(TR.drawable.ic_list.value),
+      new PrimaryDrawerItem().withIdentifier(myProfile.id).withName("My Profile").withIconAppColor(TR.drawable.ic_person.value),
+      new PrimaryDrawerItem().withIdentifier(search.id).withName("Search Summoner").withIconAppColor(TR.drawable.ic_search.value),
+      new PrimaryDrawerItem().withIdentifier(scouter.id).withName("Game Scouter").withIconAppColor(TR.drawable.ic_videogame_asset.value),
       new SectionDrawerItem().withName("Settings"),
       appearanceStatus,
-      new PrimaryDrawerItem().withIdentifier(statusMsg.id).withName("Change Status Msg").withIcon(TR.drawable.ic_format_quote.value),
-      new PrimaryDrawerItem().withIdentifier(preferences.id).withName("Preferences").withIcon(TR.drawable.ic_settings.value),
+      new PrimaryDrawerItem().withIdentifier(statusMsg.id).withName("Change Status Msg").withIconAppColor(TR.drawable.ic_format_quote.value),
+      new PrimaryDrawerItem().withIdentifier(preferences.id).withName("Preferences").withIconAppColor(TR.drawable.ic_settings.value),
       new DividerDrawerItem(),
-      new PrimaryDrawerItem().withIdentifier(ads.id).withName("Remove Ads").withIcon(TR.drawable.ic_thumb_up.value),
-      new PrimaryDrawerItem().withIdentifier(logout.id).withName("Logout").withIcon(TR.drawable.ic_exit_to_app.value)
+      new PrimaryDrawerItem().withIdentifier(ads.id).withName("Remove Ads").withIconAppColor(TR.drawable.ic_thumb_up.value),
+      new PrimaryDrawerItem().withIdentifier(logout.id).withName("Logout").withIconAppColor(TR.drawable.ic_exit_to_app.value)
     )
     .withOnDrawerItemClickListener((_: View, _: Int, item: IDrawerItem[_, _ <: ViewHolder]) => handleDrawerItemClick(item.getIdentifier))
     .build()
@@ -173,4 +172,12 @@ object NavDrawer {
   protected val online = DrawerItem(900)
   protected val away = DrawerItem(901)
   protected val offline = DrawerItem(902)
+
+  implicit class CustomPrimaryDrawerItem(val primaryDrawerItem: PrimaryDrawerItem) extends AnyVal {
+    def withIconAppColor(drawable: Drawable)(implicit ctx: Ctx): PrimaryDrawerItem =
+      primaryDrawerItem.withIcon(drawable)
+        .withIconColorRes(R.color.nav_drawer_icon)
+        .withSelectedIconColorRes(R.color.nav_drawer_icon_selected)
+        .withIconTintingEnabled(true)
+  }
 }

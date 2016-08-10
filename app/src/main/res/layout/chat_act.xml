@@ -23,19 +23,26 @@
         android:background="#ffdddddd"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        >
 
         <EditText
             android:id="@+id/messageEdt"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:hint="Message to friend"
+            android:background="@android:color/transparent"
+            android:minHeight="56dp"/>
 
         <Button
             android:id="@+id/sendBtn"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Send" />
+            android:layout_height="40dp"
+            android:text="Send"
+            android:background="@color/primary"
+            android:textColor="@color/md_white"
+            android:elevation="4dp"/>
 
     </LinearLayout>
 

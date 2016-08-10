@@ -24,6 +24,7 @@ import scala.concurrent.duration._
     super.onCreate(savedInstanceState)
     getSupportActionBar.setTitle(selectedRegion.map(_.name).getOrElse("Login"))
     toolbar.setNavigationOnClickListener(_ => startActivity(new Intent(this, classOf[RegionSelectionAct])))
+    views.loginBtn.morphToNormalBtn("Login", R.color.login_btn_normal)
 
     errMsg.foreach(errMsg =>
       new MaterialDialog.Builder(ctx)

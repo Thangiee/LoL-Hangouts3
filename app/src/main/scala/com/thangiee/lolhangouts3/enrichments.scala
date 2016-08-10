@@ -1,5 +1,6 @@
 package com.thangiee.lolhangouts3
 
+import android.graphics.drawable.Drawable
 import android.support.v7.widget.RecyclerView.Adapter
 import android.support.v7.widget.Toolbar
 import android.view.View
@@ -22,6 +23,10 @@ object enrichments {
 
   implicit class RichView[V <: View](val v: V) extends AnyVal {
     def + [A](fn: V => A): V = { fn(v); v }
+  }
+
+  implicit class RichDrawable(val drawable: Drawable) extends AnyVal {
+    def + [A](fn: Drawable => A): Drawable = { fn(drawable); drawable }
   }
 
   implicit class RichImgView(val img: ImageView) extends AnyVal {
@@ -85,7 +90,7 @@ object enrichments {
           .width(100.dp)
           .height(56.dp)
           .color(r2color(colorRes))
-          .colorPressed(TR.color.md_orange_700.value) // todo:
+          .colorPressed(r2color(colorRes))
           .text(txt)
       )
       btn
@@ -98,7 +103,7 @@ object enrichments {
           .cornerRadius(56.dp)
           .width(56.dp)
           .height(56.dp)
-          .color(TR.color.md_light_green_500.value)
+          .color(TR.color.login_btn_succ.value)
           .icon(TR.drawable.ic_done.resid)
       )
       btn
@@ -111,7 +116,7 @@ object enrichments {
           .cornerRadius(56.dp)
           .width(56.dp)
           .height(56.dp)
-          .color(TR.color.md_red_500.value)
+          .color(TR.color.login_btn_error.value)
           .icon(TR.drawable.ic_close.resid)
       )
       btn

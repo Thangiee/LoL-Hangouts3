@@ -253,17 +253,17 @@ object FriendItem {
           newestMsgsCache.get(friend.id).map {
             case Some(msg) => runOnUi {
               msgTv.setText(if (msg.sender) s"You: ${msg.text}" else s"${msg.text}")
-              if (!msg.read) msgTv.setTypeface(null, Typeface.BOLD)
+              msgTv.setTextColor(if (msg.read) TR.color.msg_read.value else TR.color.msg_unread.value)
             }
             case None => runOnUi(msgTv.setText(""))
           }
 
           if (friend.isOnline) {
             friend.chatMode match {
-              case Chat => statusTv.textWithColor("Online", TR.color.md_green_500)
-              case AFK => statusTv.textWithColor("Away", TR.color.md_red_500)
+              case Chat => statusTv.textWithColor("Online", TR.color.status_online)
+              case AFK => statusTv.textWithColor("Away", TR.color.status_away)
               case Busy =>
-                val orangeTxt = (txt: String) => (tv: TextView) => tv.textWithColor(txt, TR.color.md_orange_500)
+                val orangeTxt = (txt: String) => (tv: TextView) => tv.textWithColor(txt, TR.color.status_busy)
                 friend.gameStatus match {
                   case Some("inGame") =>
                     val gameTime = Math.round((System.currentTimeMillis() - friend.gameStartTime.getOrElse(0L)) / 60000)
@@ -275,7 +275,7 @@ object FriendItem {
                 }
             }
           } else {
-            statusTv.textWithColor("Offline", TR.color.md_grey_500)
+            statusTv.textWithColor("Offline", TR.color.status_offline)
           }
 
         }

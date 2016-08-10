@@ -17,6 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@color/primary_text"
         android:text="Medium Text"
         android:gravity="center_vertical"
         android:paddingLeft="24dp"
