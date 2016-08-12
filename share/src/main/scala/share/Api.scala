@@ -33,26 +33,13 @@ case class Message(
 )
 
 object Message {
-  implicit val fmt = Json.format[Message]
-  implicit val ff = new MapIntFormats[Message]()
-}
-
-class MapIntReads[T]()(implicit reads: Reads[T]) extends Reads[Map[Int, T]] {
-  def reads(jv: JsValue): JsResult[Map[Int, T]] =
-    JsSuccess(jv.as[Map[String, T]].map{case (k, v) =>
-      k.toString.toInt -> v .asInstanceOf[T]
-    })
-}
-
-class MapIntWrites[T]()(implicit writes: Writes[T])  extends Writes[Map[Int, T]] {
-  def writes(map: Map[Int, T]): JsValue =
-    Json.obj(map.map{case (s, o) =>
-      val ret: (String, JsValueWrapper) = s.toString -> Json.toJson(o)
-      ret
-    }.toSeq:_*)
+  implicit val msgFmt    = Json.format[Message]
+  implicit val mapIntFmt = new MapIntFormats[Message]()
 }
 
 class MapIntFormats[T]()(implicit format: Format[T]) extends Format[Map[Int, T]]{
-  override def reads(json: JsValue): JsResult[Map[Int, T]] = new MapIntReads[T].reads(json)
-  override def writes(o: Map[Int, T]): JsValue = new MapIntWrites[T].writes(o)
+  def reads(json: JsValue): JsResult[Map[Int, T]] =
+    JsSuccess(json.as[Map[String, T]].map{case (k, v) => k.toString.toInt -> v .asInstanceOf[T]})
+  def writes(map: Map[Int, T]): JsValue =
+    Json.obj(map.map{case (s, o) => val ret: (String, JsValueWrapper) = s.toString -> Json.toJson(o); ret}.toSeq:_*)
 }
