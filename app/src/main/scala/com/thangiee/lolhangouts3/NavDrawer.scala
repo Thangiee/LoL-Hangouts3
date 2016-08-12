@@ -99,17 +99,24 @@ trait NavDrawer extends SessionAct {
 
   def handleDrawerItemClick(id: Long): Boolean = {
     val (keepOpen, close) = (true, false)
+    val comingSoonDialog = new MaterialDialog.Builder(ctx).title("Coming Soon").positiveText("Ok")
+
     if (id == selectedDrawer.id) keepOpen // ignore when clicking on an already selected item
     else id match {
       case friendList.id =>
+        CurrentUserInfo.load(session).map(user => startActivity(FriendListAct(user.summoner.id)))
         close
       case myProfile.id =>
+        comingSoonDialog.show()
         close
       case search.id =>
+        comingSoonDialog.show()
         close
       case scouter.id =>
+        comingSoonDialog.show()
         close
       case preferences.id =>
+        comingSoonDialog.show()
         close
       case ads.id =>
         drawer.setSelection(selectedDrawer.id)
