@@ -3,7 +3,7 @@ package com.thangiee.lolhangouts3
 import android.content.Intent
 import android.os.Bundle
 import android.widget.RelativeLayout
-import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.{DialogAction, MaterialDialog}
 import com.hanhuy.android.extensions._
 import com.thangiee.lolhangouts3.TypedViewHolder.login_act
 import com.thangiee.lolhangouts3.enrichments._
@@ -11,6 +11,10 @@ import lolchat._
 import lolchat.model._
 import boopickle.Default._
 import com.thangiee.metadroid.Case
+import ClientApi._
+import android.net.Uri
+import autowire._
+import cats.data.OptionT
 
 import scala.concurrent.duration._
 
@@ -71,6 +75,21 @@ import scala.concurrent.duration._
       views.savePasswdSwitch.setChecked(config.passwd.nonEmpty)
       views.offlineLoginSwitch.setChecked(config.offlineLogin)
     })
+
+    OptionT(clientApi.getBuildVersion().call()).map { newestBuildVer =>
+      val packageName: ErrMsg = getPackageName
+      if (getPackageManager.getPackageInfo(packageName, 0).versionCode < newestBuildVer.code) runOnUi {
+        new MaterialDialog.Builder(ctx)
+          .title("Update Available!")
+          .content(s"New app version ${newestBuildVer.version} is now available in the Play store. ${newestBuildVer.msg}")
+          .negativeText("Later")
+          .positiveText("Update")
+          .onPositive((_: MaterialDialog, _: DialogAction) => {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + packageName)))  // open app page in play store
+          })
+          .show()
+      }
+    }
   }
 
   override def onPause(): Unit = {

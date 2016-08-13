@@ -2,7 +2,7 @@ package server
 
 import io.getquill._
 import io.getquill.context.sql.idiom.SqlIdiom
-import share.Message
+import share.{BuildVersion, Message}
 
 trait Schema[T <: SqlIdiom, S <: NamingStrategy] {
   val ctx: JdbcContext[T, S]
@@ -31,4 +31,7 @@ trait Schema[T <: SqlIdiom, S <: NamingStrategy] {
       quote(recentN(userId, friendId, n).filter(!_.read))
   }
 
+  object BuildVersions {
+    def newest = quote(query[BuildVersion].sortBy(_.timestamp)(Ord.desc))
+  }
 }

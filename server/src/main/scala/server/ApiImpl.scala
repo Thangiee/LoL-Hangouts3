@@ -1,7 +1,7 @@
 package server
 
 import io.getquill.{JdbcContext, LowerCase, PostgresDialect}
-import share.{Api, Message}
+import share.{Api, Message, BuildVersion}
 
 object ApiImpl extends Api with Schema[PostgresDialect, LowerCase] {
   val ctx = new JdbcContext[PostgresDialect, LowerCase]("db")
@@ -28,4 +28,6 @@ object ApiImpl extends Api with Schema[PostgresDialect, LowerCase] {
 
   def friendsNewestMsg(userId: Int): Map[Int, Message] =
     ctx.run(Messages.all(userId)).groupBy(_.friendId).mapValues(_.maxBy(_.timestamp))
+
+  def getBuildVersion(): Option[BuildVersion] = ctx.run(BuildVersions.newest).headOption
 }

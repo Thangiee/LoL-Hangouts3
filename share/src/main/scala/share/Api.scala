@@ -21,6 +21,8 @@ trait Api {
   def markMsgsRead(userId: Int, friendId: Int): Long
 
   def friendsNewestMsg(userId: Int): Map[Int, Message]
+
+  def getBuildVersion(): Option[BuildVersion]
 }
 
 case class Message(
@@ -35,6 +37,12 @@ case class Message(
 object Message {
   implicit val msgFmt    = Json.format[Message]
   implicit val mapIntFmt = new MapIntFormats[Message]()
+}
+
+case class BuildVersion(code: Int, version: String, msg: String, timestamp: Date)
+
+object BuildVersion {
+  implicit val fmt = Json.format[BuildVersion]
 }
 
 class MapIntFormats[T]()(implicit format: Format[T]) extends Format[Map[Int, T]]{
