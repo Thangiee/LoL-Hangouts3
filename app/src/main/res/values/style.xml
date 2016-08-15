@@ -25,6 +25,10 @@
         <item name="android:windowAllowReturnTransitionOverlap">true</item>
 
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
+
+        <!-- dialog theme settings -->
+        <item name="md_dark_theme">true</item>
+        <item name="md_background_color">@color/dialog_bg</item>
     </style>
     
     <style name="DrawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">
