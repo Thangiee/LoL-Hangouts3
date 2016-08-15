@@ -2,6 +2,8 @@ package com.thangiee.lolhangouts3
 
 import java.nio.ByteBuffer
 
+import android.media.SoundPool.OnLoadCompleteListener
+import android.media.{AudioAttributes, AudioManager, SoundPool}
 import android.os.{Handler, Looper}
 import android.support.design.widget.Snackbar
 import android.util.Base64
@@ -49,6 +51,16 @@ trait AuxFunctions {
       fa = f(a)
       _  <- Some(prefsPut(key, fa))
     } yield fa
+
+  def playSound(soundRes: Int)(implicit ctx: Ctx): Unit = {
+    val attr = new AudioAttributes.Builder()
+      .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+      .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+      .build()
+    val sp = new SoundPool.Builder().setAudioAttributes(attr).build()
+    sp.setOnLoadCompleteListener((soundPool: SoundPool, id: Int, _: Int) => soundPool.play(id, 1, 1, 0, 0, 1))
+    sp.load(ctx, soundRes, 1)
+  }
 }
 
 object AuxFunctions extends AuxFunctions

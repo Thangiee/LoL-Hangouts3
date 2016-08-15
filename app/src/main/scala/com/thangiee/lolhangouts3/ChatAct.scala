@@ -60,7 +60,7 @@ import scala.concurrent.duration._
         succ => {
           val msg: Message = Message(userSummId, friend.id.toInt, txtMsg)
           clientApi.saveMsg(msg).call()
-          runOnUi { msgField.setText(""); addMessageToChatView(msg) }
+          runOnUi { msgField.setText(""); addMessageToChatView(msg); playSound(R.raw.alert_pm_sent) }
         }
       )
     }

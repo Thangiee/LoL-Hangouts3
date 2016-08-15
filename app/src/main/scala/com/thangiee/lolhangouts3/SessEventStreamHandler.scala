@@ -23,10 +23,11 @@ trait RefreshFndList extends SessionAct {
 }
 
 trait NotifyReceivedMsg extends SessionAct {
-  private lazy val eventStreamHandler = session.msgStream.map(msg =>
+  private lazy val eventStreamHandler = session.msgStream.map { msg =>
+    playSound(R.raw.alert_pm_receive)
     // only notify when not in chat with the user that sent the msg
     if (msg.fromId != activeFriendChat.map(_.id).getOrElse("-1")) mkMsgNotification(msg).map(showMsgNotifi)
-  )
+  }
 
   protected def activeFriendChat: Option[Friend]
   def msgNotificationPendingIntent(f: Friend): PendingIntent
