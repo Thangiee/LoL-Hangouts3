@@ -40,6 +40,10 @@
     <color name="nav_drawer_icon">@color/md_teal_a700</color>
     <color name="nav_drawer_icon_selected">@color/accent</color>
 
+    <color name="fab_sheet_bg">@color/primary_dark</color>
+    <color name="fab_sheet_text">@color/primary_text</color>
+    <color name="fab_sheet_icon">@color/nav_drawer_icon</color>
+
     <!-- MaterialDrawer DEFAULT colors -->
     <color name="material_drawer_background">@color/screen_bg</color>
     <!-- Material DEFAULT text / items colors -->

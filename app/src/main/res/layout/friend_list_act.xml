@@ -52,6 +52,7 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@color/fab_sheet_bg"
                 android:orientation="vertical">
 
                 <TextView
@@ -60,6 +61,7 @@
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="Send Friend Request"
                     android:clickable="true"
+                    android:textColor="@color/fab_sheet_text"
                     android:background="?attr/selectableItemBackground"
                     android:drawableLeft="@drawable/ic_person_add"
                     android:drawablePadding="24dp"
@@ -72,6 +74,7 @@
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="Create friend group"
                     android:clickable="true"
+                    android:textColor="@color/fab_sheet_text"
                     android:background="?attr/selectableItemBackground"
                     android:drawableLeft="@drawable/ic_create_new_folder"
                     android:drawablePadding="24dp"
@@ -84,6 +87,7 @@
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="Move friend to new group"
                     android:clickable="true"
+                    android:textColor="@color/fab_sheet_text"
                     android:background="?attr/selectableItemBackground"
                     android:drawableLeft="@drawable/ic_redo"
                     android:drawablePadding="24dp"
