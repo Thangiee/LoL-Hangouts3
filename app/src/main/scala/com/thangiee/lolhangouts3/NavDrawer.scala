@@ -116,7 +116,8 @@ trait NavDrawer extends SessionAct {
         comingSoonDialog.show()
         close
       case preferences.id =>
-        comingSoonDialog.show()
+        drawer.setSelection(selectedDrawer.id)
+        startActivity(SettingAct())
         close
       case ads.id =>
         drawer.setSelection(selectedDrawer.id)

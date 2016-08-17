@@ -3,6 +3,7 @@ package com.thangiee.lolhangouts3
 import android.app.{Notification, PendingIntent}
 import android.graphics.Color
 import android.os.Bundle
+import com.pixplicity.easyprefs.library.Prefs
 import lolchat._
 import lolchat.data.{AsyncResult, _}
 import lolchat.model.{Friend, Msg}
@@ -24,9 +25,13 @@ trait RefreshFndList extends SessionAct {
 
 trait NotifyReceivedMsg extends SessionAct {
   private lazy val eventStreamHandler = session.msgStream.map { msg =>
-    playSound(R.raw.alert_pm_receive)
     // only notify when not in chat with the user that sent the msg
-    if (msg.fromId != activeFriendChat.map(_.id).getOrElse("-1")) mkMsgNotification(msg).map(showMsgNotifi)
+    val notFromThisChat = msg.fromId != activeFriendChat.map(_.id).getOrElse("-1")
+    val prefNotifyMsgOn = Prefs.getBoolean(TR.string.pref_notify_msg.value, true)
+    if (notFromThisChat && prefNotifyMsgOn) {
+      playSound(R.raw.alert_pm_receive)
+      mkMsgNotification(msg).map(showMsgNotifi)
+    }
   }
 
   protected def activeFriendChat: Option[Friend]

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Notification">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:textColor="@color/primary_text"
+            android:key="@string/pref_notify_msg"
+            android:title="Notify receive msg"/>
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:textColor="@color/primary_text"
+            android:key="@string/pref_notify_sound"
+            android:title="Sound"/>
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:textColor="@color/primary_text"
+            android:key="@string/pref_notify_vibrate"
+            android:title="Vibration"/>
+    </PreferenceCategory>
+</PreferenceScreen>

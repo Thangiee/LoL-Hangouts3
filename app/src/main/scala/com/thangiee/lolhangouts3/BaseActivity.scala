@@ -7,6 +7,7 @@ import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.view.View
+import com.pixplicity.easyprefs.library.Prefs
 import enrichments._
 
 trait BaseActivity extends AppCompatActivity with TypedFindView with AuxFunctions {
@@ -28,7 +29,9 @@ trait BaseActivity extends AppCompatActivity with TypedFindView with AuxFunction
   lazy val notifyMgr = getSystemService(Context.NOTIFICATION_SERVICE).asInstanceOf[NotificationManager]
 
   def showNotification(id: Int, notification: Notification) = {
-    notification.defaults |= Notification.DEFAULT_VIBRATE
+    if (Prefs.getBoolean(TR.string.pref_notify_vibrate.value, true)) {
+      notification.defaults |= Notification.DEFAULT_VIBRATE
+    }
     notifyMgr.notify(id, notification)
   }
 

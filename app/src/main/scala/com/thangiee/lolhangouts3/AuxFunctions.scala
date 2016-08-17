@@ -52,15 +52,16 @@ trait AuxFunctions {
       _  <- Some(prefsPut(key, fa))
     } yield fa
 
-  def playSound(soundRes: Int)(implicit ctx: Ctx): Unit = {
-    val attr = new AudioAttributes.Builder()
-      .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
-      .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-      .build()
-    val sp = new SoundPool.Builder().setAudioAttributes(attr).build()
-    sp.setOnLoadCompleteListener((soundPool: SoundPool, id: Int, _: Int) => soundPool.play(id, 1, 1, 0, 0, 1))
-    sp.load(ctx, soundRes, 1)
-  }
+  def playSound(soundRes: Int)(implicit ctx: Ctx): Unit =
+    if (Prefs.getBoolean(TR.string.pref_notify_sound.value, true)) {
+      val attr = new AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+        .build()
+      val sp = new SoundPool.Builder().setAudioAttributes(attr).build()
+      sp.setOnLoadCompleteListener((soundPool: SoundPool, id: Int, _: Int) => soundPool.play(id, 1, 1, 0, 0, 1))
+      sp.load(ctx, soundRes, 1)
+    }
 }
 
 object AuxFunctions extends AuxFunctions
