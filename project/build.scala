@@ -97,7 +97,7 @@ object Dependencies {
     "io.getquill" %% "quill-jdbc" % "0.8.0"
   )
 
-  val serverDeps = akka ++ autoWire ++ playJson ++ database ++ testing
+  val serverDeps = akka ++ autoWire ++ playJson ++ database ++ logback ++ testing
   val riotapiDeps = upickle ++ scalaCache ++ scalajHttp ++ playJson ++ cats ++ lolchatCore ++ testing ++ logback.map(_ % "provided")
   val androidDeps = autoWire ++ upickle ++ scalaCache ++ scalajHttp ++ playJson ++ boopickle ++ cats ++ androidSupport ++ lolchat ++ androidLibs ++ logging
 }
