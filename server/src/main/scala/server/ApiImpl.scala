@@ -1,10 +1,10 @@
 package server
 
-import io.getquill.{JdbcContext, LowerCase, PostgresDialect}
-import share.{Api, Message, BuildVersion}
+import io.getquill.{JdbcContext, PostgresDialect, SnakeCase}
+import share.{Api, BuildVersion, Message}
 
-object ApiImpl extends Api with Schema[PostgresDialect, LowerCase] {
-  val ctx = new JdbcContext[PostgresDialect, LowerCase]("db")
+object ApiImpl extends Api with Schema[PostgresDialect, SnakeCase] {
+  val ctx = new JdbcContext[PostgresDialect, SnakeCase]("db")
   import ctx._
 
   def getMsgsBtw(userId: Int, friendId: Int): Seq[Message] =
