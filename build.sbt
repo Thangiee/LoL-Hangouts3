@@ -58,7 +58,10 @@ lazy val app = project
     extraResDirectories ++= {
       val layout = baseDirectory.value / "src" / "main" / "res" / "layout"
       Seq(
-        layout / "region"
+        layout / "region",
+        layout / "chat",
+        layout / "friend",
+        layout / "toolbar"
       )
     },
     run <<= run in Android,
