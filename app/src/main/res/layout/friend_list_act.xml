@@ -6,18 +6,19 @@
 
     <include
         layout="@layout/toolbar"
-        android:id="@+id/include"/>
+        android:id="@+id/toolbar"/>
 
     <com.jude.easyrecyclerview.EasyRecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/include"/>
+        android:layout_below="@+id/toolbar"/>
 
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/coordinator">
+        android:id="@+id/coordinator"
+        android:layout_above="@+id/ads_holder">
 
         <com.thangiee.lolhangouts3.Fab
             android:id="@+id/fab"
@@ -28,6 +29,15 @@
             android:layout_gravity="bottom|right"/>
 
     </android.support.design.widget.CoordinatorLayout>
+
+    <include
+        layout="@layout/ads_holder"
+        android:id="@+id/ads_holder"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="false"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        />
 
     <!-- Overlay that dims the screen -->
     <com.gordonwong.materialsheetfab.DimOverlayFrameLayout
@@ -40,7 +50,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="end|bottom"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_above="@+id/ads_holder">
 
         <!-- Sheet that contains your items -->
         <android.support.v7.widget.CardView
@@ -56,7 +67,7 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="Send Friend Request"
@@ -69,7 +80,7 @@
                     android:id="@+id/sendFriendReqBtn"/>
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="Create friend group"
@@ -97,5 +108,5 @@
 
         </android.support.v7.widget.CardView>
     </io.codetail.widget.RevealLinearLayout>
-    
+
 </RelativeLayout>

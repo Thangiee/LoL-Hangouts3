@@ -23,8 +23,7 @@
         android:background="#ffdddddd"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:layout_alignParentBottom="true"
-        >
+        android:layout_above="@+id/ads_holder">
 
         <EditText
             android:id="@+id/messageEdt"
@@ -46,4 +45,12 @@
 
     </LinearLayout>
 
+    <include
+        layout="@layout/ads_holder"
+        android:id="@+id/ads_holder"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="false"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        />
 </RelativeLayout>

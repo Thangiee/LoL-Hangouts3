@@ -174,7 +174,11 @@ object ProguardValues {
 
     "-keep class com.noveogroup.android.log.**",
 
-    "-keep class io.codetail.animation.arcanimator.** { *; }"
+    "-keep class io.codetail.animation.arcanimator.** { *; }",
+
+    "-dontwarn android.support.v4.**",
+    "-keep public class com.google.android.gms.* { public *; }",
+    "-dontwarn com.google.android.gms.**"
   )
 
 }

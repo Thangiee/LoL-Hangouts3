@@ -21,10 +21,13 @@ import share.Message
 
 import scala.concurrent.duration._
 
-@Case class ChatAct(userSummId: Int, friend: Friend) extends SessionAct {
+@Case class ChatAct(userSummId: Int, friend: Friend) extends SessionAct with Ads {
   type RootView = RelativeLayout
   lazy val views: TypedViewHolder.chat_act = TypedViewHolder.setContentView(this, TR.layout.chat_act)
   lazy val toolbar: Toolbar = views.toolbar.rootView
+
+  val adUnitId: String = "ca-app-pub-4297755621988601/9330819573"
+  lazy val adLayout: ViewGroup = views.ads_holder.rootView
 
   lazy val chatMsgAdapter = ChatMessage.adapter(session, friend)
 

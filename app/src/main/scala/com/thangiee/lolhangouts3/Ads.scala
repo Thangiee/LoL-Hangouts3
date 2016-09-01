@@ -1,8 +1,10 @@
 package com.thangiee.lolhangouts3
 
+import android.os.Bundle
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams._
 import com.google.android.gms.ads.{AdRequest, AdSize, AdView}
+import com.pixplicity.easyprefs.library.Prefs
 
 
 trait Ads extends SessionAct {
@@ -11,7 +13,13 @@ trait Ads extends SessionAct {
   def adUnitId: String
   def adLayout: ViewGroup
 
-  def setupAds(): Unit = {
+
+  override def onCreate(savedInstanceState: Bundle): Unit = {
+    super.onCreate(savedInstanceState)
+    if (Prefs.getBoolean("is_ads_enable", true)) setupAds()
+  }
+
+  private def setupAds(): Unit = {
     adView.setAdSize(AdSize.SMART_BANNER)
     adView.setAdUnitId(adUnitId)
 

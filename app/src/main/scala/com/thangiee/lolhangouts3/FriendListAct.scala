@@ -37,10 +37,13 @@ import scala.concurrent.{Await, Future}
 import scalacache._
 import scalacache.guava._
 
-@Case class FriendListAct(userSummId: Int) extends SessionAct with NavDrawer with RefreshFndList with NotifyReceivedMsg with SaveReceivedMsg {
+@Case class FriendListAct(userSummId: Int) extends SessionAct with Ads with NavDrawer with RefreshFndList with NotifyReceivedMsg with SaveReceivedMsg {
   type RootView = RelativeLayout
   lazy val views  : friend_list_act = TypedViewHolder.setContentView(this, TR.layout.friend_list_act)
   lazy val toolbar: Toolbar         = views.toolbar.rootView
+
+  val adUnitId: String = "ca-app-pub-4297755621988601/1893861576"
+  lazy val adLayout: ViewGroup = views.ads_holder.rootView
 
   protected var activeFriendChat: Option[Friend] = None
   val selectedDrawer: DrawerItem = NavDrawer.friendList
