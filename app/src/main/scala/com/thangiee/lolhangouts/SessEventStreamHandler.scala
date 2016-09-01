@@ -1,4 +1,4 @@
-package com.thangiee.lolhangouts3
+package com.thangiee.lolhangouts
 
 import android.app.{Notification, PendingIntent}
 import android.graphics.Color
@@ -66,7 +66,7 @@ trait NotifyReceivedMsg extends SessionAct {
   override def onDestroy(): Unit = { super.onDestroy(); eventStreamHandler.kill() }
 }
 
-trait SaveReceivedMsg extends SessionAct {  
+trait SaveReceivedMsg extends SessionAct {
   private lazy val eventStreamHandler = session.msgStream.map(msg => {
     val isRead = msg.fromId == activeFriendChat.map(_.id).getOrElse("-1")
     saveMsg(Message(_, msg.fromId.toInt, msg.txt, sender = false, isRead))

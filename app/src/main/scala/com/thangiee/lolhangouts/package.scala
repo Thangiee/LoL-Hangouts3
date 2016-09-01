@@ -5,7 +5,7 @@ import riotapi._
 
 import scala.language.implicitConversions
 
-package object lolhangouts3 extends AnyRef with Conversions {
+package object lolhangouts extends AnyRef with Conversions {
   type Ctx = Context
   type Error = lolchat.data.Error
   val Error = lolchat.data.Error

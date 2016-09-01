@@ -1,4 +1,4 @@
-package com.thangiee.lolhangouts3
+package com.thangiee.lolhangouts
 
 import java.net.{ConnectException, SocketTimeoutException}
 

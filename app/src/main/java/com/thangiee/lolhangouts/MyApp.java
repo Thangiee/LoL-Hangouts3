@@ -1,4 +1,4 @@
-package com.thangiee.lolhangouts3;
+package com.thangiee.lolhangouts;
 
 import android.app.Application;
 import android.content.ContextWrapper;

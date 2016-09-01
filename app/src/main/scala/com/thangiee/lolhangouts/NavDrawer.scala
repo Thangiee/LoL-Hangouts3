@@ -1,4 +1,4 @@
-package com.thangiee.lolhangouts3
+package com.thangiee.lolhangouts
 
 import android.graphics.drawable.Drawable
 import android.net.Uri
@@ -16,8 +16,8 @@ import com.mikepenz.materialdrawer.model.interfaces.{IDrawerItem, IProfile}
 import com.mikepenz.materialdrawer.util.{AbstractDrawerImageLoader, DrawerImageLoader}
 import com.mikepenz.materialdrawer.{AccountHeader, AccountHeaderBuilder, Drawer, DrawerBuilder}
 import com.pixplicity.easyprefs.library.Prefs
-import com.thangiee.lolhangouts3.NavDrawer._
-import com.thangiee.lolhangouts3.enrichments._
+import com.thangiee.lolhangouts.NavDrawer._
+import com.thangiee.lolhangouts.enrichments._
 import lolchat.model._
 import lolchat.{LoLChat, ops}
 

@@ -1,7 +1,7 @@
-package com.thangiee.lolhangouts3
+package com.thangiee.lolhangouts
 
 import android.os.Bundle
-import com.thangiee.lolhangouts3.SessionAct.NoSessionException
+import com.thangiee.lolhangouts.SessionAct.NoSessionException
 import lolchat._
 import lolchat.model.Session
 import rx.Ctx.Owner

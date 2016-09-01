@@ -1,4 +1,4 @@
-package com.thangiee.lolhangouts3
+package com.thangiee.lolhangouts
 
 import android.app.PendingIntent
 import android.content.Intent
@@ -18,12 +18,12 @@ import com.hanhuy.android.extensions._
 import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
 import com.jude.easyrecyclerview.decoration.DividerDecoration
 import com.makeramen.roundedimageview.RoundedImageView
-import com.thangiee.lolhangouts3.AuxFunctions._
-import com.thangiee.lolhangouts3.ClientApi._
-import com.thangiee.lolhangouts3.FriendListAct._
-import com.thangiee.lolhangouts3.NavDrawer.DrawerItem
-import com.thangiee.lolhangouts3.TypedViewHolder._
-import com.thangiee.lolhangouts3.enrichments._
+import com.thangiee.lolhangouts.AuxFunctions._
+import com.thangiee.lolhangouts.ClientApi._
+import com.thangiee.lolhangouts.FriendListAct._
+import com.thangiee.lolhangouts.NavDrawer.DrawerItem
+import com.thangiee.lolhangouts.TypedViewHolder._
+import com.thangiee.lolhangouts.enrichments._
 import com.thangiee.metadroid.Case
 import lolchat._
 import lolchat.data.{AsyncResult, Region}

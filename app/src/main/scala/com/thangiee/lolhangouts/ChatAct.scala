@@ -1,4 +1,4 @@
-package com.thangiee.lolhangouts3
+package com.thangiee.lolhangouts
 import java.util.Date
 
 import android.os.Bundle
@@ -10,8 +10,8 @@ import com.afollestad.materialdialogs.{DialogAction, MaterialDialog}
 import com.hanhuy.android.extensions._
 import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
 import com.makeramen.roundedimageview.RoundedImageView
-import com.thangiee.lolhangouts3.ClientApi._
-import com.thangiee.lolhangouts3.enrichments._
+import com.thangiee.lolhangouts.ClientApi._
+import com.thangiee.lolhangouts.enrichments._
 import com.thangiee.metadroid.Case
 import lolchat._
 import lolchat.data.Region

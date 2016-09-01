@@ -1,4 +1,4 @@
-package com.thangiee.lolhangouts3;
+package com.thangiee.lolhangouts;
 
 import android.content.Context;
 import android.support.design.widget.FloatingActionButton;

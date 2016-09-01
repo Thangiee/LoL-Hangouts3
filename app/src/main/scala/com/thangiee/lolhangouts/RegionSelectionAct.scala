@@ -1,4 +1,4 @@
-package com.thangiee.lolhangouts3
+package com.thangiee.lolhangouts
 
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget._
 import com.hanhuy.android.appcompat.extensions._
 import com.jude.easyrecyclerview.adapter.{BaseViewHolder, RecyclerArrayAdapter}
-import com.thangiee.lolhangouts3.TypedViewHolder.region_act
+import com.thangiee.lolhangouts.TypedViewHolder.region_act
 import enrichments._
 import lolchat.data.Region
 import boopickle.Default._

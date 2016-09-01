@@ -20,7 +20,7 @@
         android:id="@+id/coordinator"
         android:layout_above="@+id/ads_holder">
 
-        <com.thangiee.lolhangouts3.Fab
+        <com.thangiee.lolhangouts.Fab
             android:id="@+id/fab"
             android:src="@drawable/ic_add"
             android:layout_height="wrap_content"

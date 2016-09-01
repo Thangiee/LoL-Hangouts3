@@ -1,12 +1,12 @@
-package com.thangiee.lolhangouts3
+package com.thangiee.lolhangouts
 
 import android.content.Intent
 import android.os.Bundle
 import android.widget.RelativeLayout
 import com.afollestad.materialdialogs.{DialogAction, MaterialDialog}
 import com.hanhuy.android.extensions._
-import com.thangiee.lolhangouts3.TypedViewHolder.login_act
-import com.thangiee.lolhangouts3.enrichments._
+import com.thangiee.lolhangouts.TypedViewHolder.login_act
+import com.thangiee.lolhangouts.enrichments._
 import lolchat._
 import lolchat.model._
 import boopickle.Default._

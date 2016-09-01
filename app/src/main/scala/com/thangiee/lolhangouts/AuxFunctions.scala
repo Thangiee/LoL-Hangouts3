@@ -1,4 +1,4 @@
-package com.thangiee.lolhangouts3
+package com.thangiee.lolhangouts
 
 import java.nio.ByteBuffer
 
@@ -10,7 +10,7 @@ import android.view.View
 import android.widget.Toast
 import boopickle.Default._
 import com.pixplicity.easyprefs.library.Prefs
-import com.thangiee.lolhangouts3.TypedResource.ResString
+import com.thangiee.lolhangouts.TypedResource.ResString
 
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Try

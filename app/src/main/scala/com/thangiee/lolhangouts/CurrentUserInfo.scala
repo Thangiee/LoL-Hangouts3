@@ -1,4 +1,4 @@
-package com.thangiee.lolhangouts3
+package com.thangiee.lolhangouts
 
 import lolchat._
 import lolchat.data._
@@ -12,10 +12,10 @@ case class CurrentUserInfo(summoner: Summoner, profile: Profile)
 
 object CurrentUserInfo {
 
-  def load(sess: Session): AsyncResult[CurrentUserInfo] = {
+  def load(sess: Session)(implicit ctx: Ctx): AsyncResult[CurrentUserInfo] = {
     def setStatusMsg(profile: Profile): Profile = {
       if (profile.statusMsg.isEmpty) {
-        val msg = prefsGet[String](s"${sess.user}-statusMsg").getOrElse("Using LoL Hangouts app")
+        val msg = prefsGet[String](s"${sess.user}-statusMsg").getOrElse(s"Using ${TR.string.app_name.value} app")
         profile.copy(statusMsg = msg)
       } else {
         profile

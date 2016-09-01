@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="com.thangiee.lolhangouts3"
-      android:versionCode="1"
-      android:versionName="1.0">
+      package="com.thangiee.lolhangouts"
+      android:versionCode="3000"
+      android:versionName="3.0.0">
 
     <uses-sdk
         android:minSdkVersion="21"
@@ -16,13 +16,13 @@
         android:label="@string/app_name"
         android:icon="@drawable/ic_launcher"
         android:theme="@style/AppTheme"
-        android:name=".MyApp">
+        android:name="com.thangiee.lolhangouts.MyApp">
 
         <!--<uses-library android:name="scala.2-11-8.library" android:required="true" />-->
         <!--<uses-library android:name="scala.2-11-8.reflect" android:required="true" />-->
         <!--<uses-library android:name="scala.2-11-7.reflect" android:required="true" />-->
 
-        <activity android:name=".LoginAct"
+        <activity android:name="com.thangiee.lolhangouts.LoginAct"
                   android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,15 +30,15 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".RegionSelectionAct"/>
+        <activity android:name="com.thangiee.lolhangouts.RegionSelectionAct"/>
 
-        <activity android:name=".FriendListAct"
+        <activity android:name="com.thangiee.lolhangouts.FriendListAct"
                   android:launchMode="singleTop"/>
 
-        <activity android:name=".ChatAct"
+        <activity android:name="com.thangiee.lolhangouts.ChatAct"
                   android:windowSoftInputMode="stateHidden|adjustResize"/>
 
-        <activity android:name=".SettingAct"/>
+        <activity android:name="com.thangiee.lolhangouts.SettingAct"/>
     </application>
 
 </manifest>

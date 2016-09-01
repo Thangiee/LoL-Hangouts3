@@ -1,4 +1,4 @@
-package com.thangiee.lolhangouts3
+package com.thangiee.lolhangouts
 
 import android.graphics.drawable.Drawable
 import android.support.v7.widget.RecyclerView.Adapter
