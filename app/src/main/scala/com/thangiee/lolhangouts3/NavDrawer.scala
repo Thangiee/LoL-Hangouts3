@@ -8,20 +8,25 @@ import android.view.View
 import android.widget.ImageView
 import cats.implicits.futureInstance
 import com.afollestad.materialdialogs.MaterialDialog
+import com.anjlab.android.iab.v3.{BillingProcessor, TransactionDetails}
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.mikepenz.materialdrawer.model._
 import com.mikepenz.materialdrawer.model.interfaces.{IDrawerItem, IProfile}
 import com.mikepenz.materialdrawer.util.{AbstractDrawerImageLoader, DrawerImageLoader}
 import com.mikepenz.materialdrawer.{AccountHeader, AccountHeaderBuilder, Drawer, DrawerBuilder}
+import com.pixplicity.easyprefs.library.Prefs
 import com.thangiee.lolhangouts3.NavDrawer._
 import com.thangiee.lolhangouts3.enrichments._
 import lolchat.model._
 import lolchat.{LoLChat, ops}
 
-trait NavDrawer extends SessionAct {
+trait NavDrawer extends SessionAct with BillingProcessor.IBillingHandler {
 
   def selectedDrawer: DrawerItem
+
+  private val SKU_REMOVE_ADS = "lolhangouts.remove.ads"
+  private lazy val billingProcessor = new BillingProcessor(ctx, TR.string.play_service_key.value, this)
 
   private lazy val profile  = new ProfileDrawerItem().withName("Loading...").withEmail("Loading...").withIcon(R.drawable.ic_summ_unknown)
 
@@ -121,6 +126,12 @@ trait NavDrawer extends SessionAct {
         close
       case ads.id =>
         drawer.setSelection(selectedDrawer.id)
+        if (billingProcessor.listOwnedProducts.contains(SKU_REMOVE_ADS)) {
+          toast(TR.string.ads_already_disabled)
+        } else {
+          Prefs.putBoolean("is_ads_enable", true)
+          billingProcessor.purchase(this, SKU_REMOVE_ADS)
+        }
         keepOpen
       case logout.id =>
         drawer.setSelection(selectedDrawer.id)
@@ -164,6 +175,27 @@ trait NavDrawer extends SessionAct {
   def showAwayStatus(): Unit = drawer.updateItem(appearanceStatus.withName("Away").withIcon(redCircle))
 
   def showOfflineStatus(): Unit = drawer.updateItem(appearanceStatus.withName("Offline").withIcon(greyCircle))
+
+  def onProductPurchased(productId: String, details: TransactionDetails): Unit = {
+    Prefs.putBoolean("is_ads_enable", false)
+    toast(TR.string.ads_disabled)
+  }
+
+  def onPurchaseHistoryRestored(): Unit = {
+    if (billingProcessor.listOwnedProducts.contains(SKU_REMOVE_ADS)) {
+      Prefs.putBoolean("is_ads_enable", false)
+      toast(TR.string.ads_disabled)
+    }
+  }
+
+  def onBillingInitialized(): Unit = {}
+
+  def onBillingError(errorCode: Int, error: Throwable): Unit = error.printStackTrace()
+
+  override def onDestroy(): Unit = {
+    super.onDestroy()
+    billingProcessor.release()
+  }
 }
 
 object NavDrawer {

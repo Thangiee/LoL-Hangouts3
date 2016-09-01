@@ -2,14 +2,15 @@ package com.thangiee.lolhangouts3
 
 import java.nio.ByteBuffer
 
-import android.media.SoundPool.OnLoadCompleteListener
-import android.media.{AudioAttributes, AudioManager, SoundPool}
+import android.media.{AudioAttributes, SoundPool}
 import android.os.{Handler, Looper}
 import android.support.design.widget.Snackbar
 import android.util.Base64
 import android.view.View
+import android.widget.Toast
 import boopickle.Default._
 import com.pixplicity.easyprefs.library.Prefs
+import com.thangiee.lolhangouts3.TypedResource.ResString
 
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
@@ -33,6 +34,10 @@ trait AuxFunctions {
   def longSnackbar(view: View, txt: String): Snackbar = snackbar(view, txt, Snackbar.LENGTH_LONG)
 
   def infSnackbar(view: View, txt: String): Snackbar = snackbar(view, txt, Snackbar.LENGTH_INDEFINITE)
+
+  def toast(text: String)(implicit ctx: Ctx): Unit = Toast.makeText(ctx, text, Toast.LENGTH_LONG).show()
+
+  def toast(text: TypedRes[ResString])(implicit ctx: Ctx): Unit = Toast.makeText(ctx, text.value, Toast.LENGTH_LONG).show()
 
   def prefsPut[A](key: String, value: A)(implicit pickler: Pickler[A]): Unit = {
     val string: String = Base64.encodeToString(Pickle.intoBytes(value).array(), Base64.DEFAULT)
