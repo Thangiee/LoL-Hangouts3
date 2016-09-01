@@ -9,7 +9,7 @@ import akka.http.scaladsl.server.RouteResult.{Complete, Rejected}
 import akka.http.scaladsl.server.directives.LogEntry
 import akka.stream.ActorMaterializer
 import play.api.libs.json.{Json, Reads, Writes}
-import share.{Api, ServerConfig}
+import share.Api
 
 import scala.io.StdIn
 
@@ -47,8 +47,8 @@ object Server extends App {
     }
   }
 
-  val binding = Http().bindAndHandle(routes, ServerConfig.interface, ServerConfig.port)
-  println(s"Server listening on ${ServerConfig.interface}:${ServerConfig.port}")
+  val binding = Http().bindAndHandle(routes, "0.0.0.0", 80)
+  binding.map(server => println(s"Server listening on ${server.localAddress.getHostName}:${server.localAddress.getPort}"))
   StdIn.readLine()
 
   binding
