@@ -14,12 +14,13 @@ import riotapi.free.RiotApiF._
 import riotapi.models._
 import riotapi.utils.Parsing._
 
+import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.{Failure, Random, Success, Try}
 import scalacache._
 import scalacache.guava._
-import scalaj.http.Http
+import scalaj.http.{Http, HttpResponse}
 
 case class RiotEndpoint(keys: NonEmptyVector[String], numOfThreads: Int = 8) {
   implicit val exeCtx = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(numOfThreads))
@@ -42,23 +43,27 @@ case class RiotEndpoint(keys: NonEmptyVector[String], numOfThreads: Int = 8) {
   def interpreter(region: Region) = new (RiotApiF ~> AsyncResult) {
     def call(url: String, params: (String, String)*)(ttl: FiniteDuration): AsyncResult[String] = {
       val cacheKey = url + params.mkString
+
+      @tailrec def attemptCall(i: Int, max: Int): Xor[Error, String] = {
+        val request = Http(url).params(params :+ ("api_key" -> randomKey))
+        val response = Try(request.asString)
+
+        response match {
+          case Success(resp) if resp.is2xx =>
+            sync.cachingWithTTL(url)(ttl)(resp.body)
+            Xor.Right(resp.body)
+          case Success(HttpResponse(_, 403, _)) =>
+            if (i <= max) attemptCall(i+1, max) else Xor.Left(Error(408, "Request Timeout. Please try again."))
+          case Success(HttpResponse(body, code, _)) =>
+            val errMsg = Try(Json.parse(body) \ "status" \ "message").getOrElse("") + s":${request.url}"
+            Xor.Left(Error(code, errMsg))
+          case Failure(err) => Xor.Left(Error(500, s"${err.getMessage}:${request.url}"))
+        }
+      }
+
       XorT(get[String, NoSerialization](cacheKey).map {
         case Some(cacheHit) => Xor.Right(cacheHit)
-        case None =>
-          val request = Http(url).params(params :+ ("api_key" -> randomKey))
-          val response = Try(request.asString)
-
-          response match {
-            case Success(resp) =>
-              if (resp.is2xx) {
-                sync.cachingWithTTL(url)(ttl)(resp.body)
-                Xor.Right(resp.body)
-              } else {
-                val errMsg = Try(Json.parse(resp.body) \ "status" \ "message").getOrElse("") + s":${request.url}"
-                Xor.Left(Error(resp.code, errMsg))
-              }
-            case Failure(err) => Xor.Left(Error(500, s"${err.getMessage}:${request.url}"))
-          }
+        case None => attemptCall(1, max = 7 min keys.unwrap.size)
       })
     }
 
