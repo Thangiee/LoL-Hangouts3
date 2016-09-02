@@ -47,7 +47,7 @@ object Server extends App {
     }
   }
 
-  val binding = Http().bindAndHandle(routes, "0.0.0.0", 80)
+  val binding = Http().bindAndHandle(routes, "0.0.0.0", 443)
   binding.map(server => println(s"Server listening on ${server.localAddress.getHostName}:${server.localAddress.getPort}"))
   StdIn.readLine()
 
