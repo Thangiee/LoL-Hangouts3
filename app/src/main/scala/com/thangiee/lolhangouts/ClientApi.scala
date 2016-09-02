@@ -14,7 +14,7 @@ import scala.concurrent.duration._
 private object Client extends autowire.Client[String, Reads, Writes] {
 
   def doCall(req: Request): Future[String] = Future {
-    scalaj.http.Http(s"http://lolhangouts.com/api/" + req.path.mkString("/"))
+    scalaj.http.Http(s"https://lolhangouts.com/api/" + req.path.mkString("/"))
       .timeout(connTimeoutMs = 3.seconds.toMillis.toInt, readTimeoutMs = 3.seconds.toMillis.toInt)
       .params(req.args)
       .asString.body
