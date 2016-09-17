@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.support.v7.widget.RecyclerView.ViewHolder
 import android.view.View
 import android.widget.ImageView
-import cats.implicits.futureInstance
+import cats.implicits._
 import com.afollestad.materialdialogs.MaterialDialog
 import com.anjlab.android.iab.v3.{BillingProcessor, TransactionDetails}
 import com.bumptech.glide.Glide

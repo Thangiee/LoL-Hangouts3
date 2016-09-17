@@ -39,7 +39,7 @@ object Parsing {
     asNonEmpty(read[Vector[League]](select(json, id)))
 
   def parseLeagueEntries(ids: Seq[Int], json: String): Map[Int, NonEmptyVector[League]] =
-    ids.map(k => (k, parseLeagueEntries(k, json).getOrElse(NonEmptyVector(League())))).toMap
+    ids.map(k => (k, parseLeagueEntries(k, json).getOrElse(NonEmptyVector(League(), Vector.empty)))).toMap
 
   private def asNonEmpty[A](value: => Seq[A]): Xor[Throwable, NonEmptyVector[A]] = Xor.fromTry(Try(value)).flatMap {
     case Nil => Xor.left(new Throwable("Empty"))

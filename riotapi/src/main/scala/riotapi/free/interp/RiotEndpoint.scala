@@ -2,15 +2,12 @@ package riotapi.free.interp
 
 import java.util.concurrent.{Executors, ThreadLocalRandom}
 
-import cats._
-import cats.data.{NonEmptyVector, Xor, XorT}
-import cats.implicits.vectorInstance
-import cats.syntax.all._
-import play.api.libs.json.Json
+import cats.data._
+import cats.implicits._
 import lolchat.data._
-import riotapi._
-import riotapi.free.RiotApiF
-import riotapi.free.RiotApiF._
+import play.api.libs.json.Json
+import riotapi.free.RiotApi
+import riotapi.free.RiotApi.ops.RiotApiOp
 import riotapi.models._
 import riotapi.utils.Parsing._
 
@@ -34,13 +31,13 @@ case class RiotEndpoint(keys: NonEmptyVector[String], numOfThreads: Int = 8) {
   val leagueVer     = "v2.5"
   val matchVer      = "v2.2"
 
-  def run[A](ops: RiotApiOp[A], region: Region): AsyncResult[A] = ops.foldMap(interpreter(region))
+  def run[A](op: RiotApiOp[A], region: Region): AsyncResult[A] = interpreter(region).run(op)
 
-  def randomKey: String = new Random(ThreadLocalRandom.current()).shuffle(keys.unwrap).head
+  def randomKey: String = new Random(ThreadLocalRandom.current()).shuffle(keys.toVector).head
 
   def baseUrl(region: Region) = s"https://${region.abbr}.api.pvp.net/api/lol/${region.abbr}"
 
-  def interpreter(region: Region) = new (RiotApiF ~> AsyncResult) {
+  def interpreter(region: Region) = new RiotApi.Interp[AsyncResult] {
     def call(url: String, params: (String, String)*)(ttl: FiniteDuration): AsyncResult[String] = {
       val cacheKey = url + params.mkString
 
@@ -63,7 +60,7 @@ case class RiotEndpoint(keys: NonEmptyVector[String], numOfThreads: Int = 8) {
 
       XorT(get[String, NoSerialization](cacheKey).map {
         case Some(cacheHit) => Xor.Right(cacheHit)
-        case None => attemptCall(1, max = 7 min keys.unwrap.size)
+        case None => attemptCall(1, max = 7 min keys.toVector.size)
       })
     }
 
@@ -73,65 +70,66 @@ case class RiotEndpoint(keys: NonEmptyVector[String], numOfThreads: Int = 8) {
         resp <- AsyncResult(parser(json).leftMap(err => Error(500, err.getMessage)))
       } yield resp
 
-    override def apply[A](fa: RiotApiF[A]): AsyncResult[A] = fa match {
-      case SummonerByName(name)      =>
-        callAndParseResp(s"${baseUrl(region)}/$summVer/summoner/by-name/$name")(1.day)(json => parseSummoner(name, json))
-
-      case SummonerById(id)          =>
-        callAndParseResp(s"${baseUrl(region)}/$summVer/summoner/$id")(1.day)(json => parseSummoner(id.toString, json))
-
-      case SummonerNameById(id)      =>
-        callAndParseResp(s"${baseUrl(region)}/$summVer/summoner/$id/name")(1.day)(json => parseSummonerName(id, json))
-
-      case ChampsStatsById(id, year) =>
-        callAndParseResp(s"${baseUrl(region)}/$statsVer/stats/by-summoner/$id/ranked", "season" -> s"SEASON$year")(20.minutes)(parseChampsStats)
-          .recover {
-            case Error(404, _, _) => NonEmptyVector(ChampionStats())
-          }
-
-      case LeagueEntriesByIds(ids)   =>
-        (for {
-          json <- call(s"${baseUrl(region)}/$leagueVer/league/by-summoner/${ids.mkString(",")}/entry")(20.minutes)
-          resp <- AsyncResult.pure(parseLeagueEntries(ids, json))
-        } yield resp) recover {
-          case Error(404, _, _) =>
-            val league = NonEmptyVector(League())
-            ids.map(id => (id, league)).toMap
-        }
-
-      case ChampStaticDataByIds(ids)   =>
-        ids.map(id => {
-          val url = s"https://${region.abbr}.api.pvp.net/api/lol/static-data/${region.abbr}/v1.2/champion/$id"
-          callAndParseResp(url)(1.day)(json => parseChampion(json))
-        }).sequenceU
-
-
-      case CurrentGameInfoById(id)   =>
-        val platformId = region.abbr.toLowerCase match {
-          case "na" => "NA1"
-          case "euw" => "EUW1"
-          case "eune" => "EUN1"
-          case "kr" => "KR"
-          case "oce" => "OC1"
-          case "br" => "BR1"
-          case "lan" => "LA1"
-          case "las" => "LA2"
-          case "ru" => "RU"
-          case "tr" => "TR1"
-          case _ => "PBE1"
-        }
-        val url = s"https://${region.abbr}.api.pvp.net/observer-mode/rest/consumer/getSpectatorGameInfo/$platformId/$id"
-        callAndParseResp(url)(20.minutes)(json => parseCurrentGameInfo(json))
-
-      case SpellStaticData(id)       =>
-        val url = s"https://global.api.pvp.net/api/lol/static-data/${region.abbr}/$staticDataVer/summoner-spell/$id"
-        callAndParseResp(url)(1.day)(json => parseSummonerSpell(json))
-
-      case SummaryStatsById(id, year)      =>
-        val url = s"${baseUrl(region)}/$statsVer/stats/by-summoner/$id/summary?season=SEASON$year"
-        callAndParseResp(url)(20.minutes)(parsePlayerStatsSummary)
+    def summonerByName(username: String): AsyncResult[Summoner] = {
+      val name = username.replace(" ", "")
+      callAndParseResp(s"${baseUrl(region)}/$summVer/summoner/by-name/$name")(1.day)(json => parseSummoner(name, json))
     }
 
+    def summonerById(id: Int): AsyncResult[Summoner] =
+      callAndParseResp(s"${baseUrl(region)}/$summVer/summoner/$id")(1.day)(json => parseSummoner(id.toString, json))
+
+    def summonerNameById(id: Int): AsyncResult[String] =
+      callAndParseResp(s"${baseUrl(region)}/$summVer/summoner/$id/name")(1.day)(json => parseSummonerName(id, json))
+
+    def champStaticDataByIds(ids: Vector[Int]): AsyncResult[Vector[Champion]] =
+      ids.map(id => {
+        val url = s"https://${region.abbr}.api.pvp.net/api/lol/static-data/${region.abbr}/v1.2/champion/$id"
+        callAndParseResp(url)(1.day)(json => parseChampion(json))
+      }).sequenceU
+
+    def champsStatsById(id: Int, year: Int): AsyncResult[NonEmptyVector[ChampionStats]] =
+      callAndParseResp(s"${baseUrl(region)}/$statsVer/stats/by-summoner/$id/ranked", "season" -> s"SEASON$year")(20.minutes)(parseChampsStats)
+        .recover {
+          case Error(404, _, _) => NonEmptyVector(ChampionStats(), Vector.empty)
+        }
+
+    def currentGameInfoById(id: Int): AsyncResult[CurrentGameInfo] = {
+      val platformId = region.abbr.toLowerCase match {
+        case "na" => "NA1"
+        case "euw" => "EUW1"
+        case "eune" => "EUN1"
+        case "kr" => "KR"
+        case "oce" => "OC1"
+        case "br" => "BR1"
+        case "lan" => "LA1"
+        case "las" => "LA2"
+        case "ru" => "RU"
+        case "tr" => "TR1"
+        case _ => "PBE1"
+      }
+      val url = s"https://${region.abbr}.api.pvp.net/observer-mode/rest/consumer/getSpectatorGameInfo/$platformId/$id"
+      callAndParseResp(url)(20.minutes)(json => parseCurrentGameInfo(json))
+    }
+
+    def spellStaticData(id: Int): AsyncResult[SummonerSpell] = {
+      val url = s"https://global.api.pvp.net/api/lol/static-data/${region.abbr}/$staticDataVer/summoner-spell/$id"
+      callAndParseResp(url)(1.day)(json => parseSummonerSpell(json))
+    }
+
+    def leagueEntriesByIds(ids: Vector[Int]): AsyncResult[Map[Int, NonEmptyVector[League]]] =
+      (for {
+        json <- call(s"${baseUrl(region)}/$leagueVer/league/by-summoner/${ids.mkString(",")}/entry")(20.minutes)
+        resp <- AsyncResult.pure(parseLeagueEntries(ids, json))
+      } yield resp) recover {
+        case Error(404, _, _) =>
+          val league = NonEmptyVector(League(), Vector.empty)
+          ids.map(id => (id, league)).toMap
+      }
+
+    def summaryStatsById(id: Int, year: Int): AsyncResult[NonEmptyVector[PlayerStatsSummary]] = {
+      val url = s"${baseUrl(region)}/$statsVer/stats/by-summoner/$id/summary?season=SEASON$year"
+      callAndParseResp(url)(20.minutes)(parsePlayerStatsSummary)
+    }
   }
 
 }

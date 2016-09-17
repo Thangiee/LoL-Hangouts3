@@ -1,8 +1,7 @@
-import cats.free.Free
-import cats.std.FutureInstances
-import riotapi.free.{RiotApiF, RiotApiOps}
+import riotapi.free.RiotApi
 
-package object riotapi extends AnyRef with RiotApiOps with FutureInstances {
-  type RiotApiOp[A] = Free[RiotApiF, A]
-  val RiotApi = free.interp.RiotEndpoint
+package object riotapi extends AnyRef with cats.instances.FutureInstances {
+  type RiotApiOp[A] = RiotApi.ops.RiotApiOp[A]
+  val RiotApiOps = RiotApi.ops
+  val RiotApiEndpoint = free.interp.RiotEndpoint
 }

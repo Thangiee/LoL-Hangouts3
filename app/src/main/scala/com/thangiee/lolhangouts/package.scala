@@ -13,5 +13,5 @@ package object lolhangouts extends AnyRef with Conversions {
 
   implicit val exeCtx = scala.concurrent.ExecutionContext.Implicits.global
 
-  val riotApi = RiotApi(Key.riotApiKeys)
+  val riotApi = RiotApiEndpoint(Key.riotApiKeys)
 }

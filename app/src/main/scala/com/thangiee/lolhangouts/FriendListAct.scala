@@ -28,7 +28,7 @@ import com.thangiee.metadroid.Case
 import lolchat._
 import lolchat.data.{AsyncResult, Region}
 import lolchat.model._
-import riotapi.free.RiotApiOps
+import riotapi.free.RiotApi
 import share.Message
 
 import scala.collection.JavaConversions._
@@ -90,7 +90,7 @@ import scalacache.guava._
     views.sendFriendReqBtn.onClick0 {
       def doFriendReq(name: String): Unit = {
         val result = for {
-          summ <- riotApi.run(RiotApiOps.summonerByName(name.toString), session.region)
+          summ <- riotApi.run(RiotApi.summonerByName(name.toString), session.region)
           _    <- LoLChat.run(sendFriendRequest(summ.id.toString)(session))
         } yield ()
 

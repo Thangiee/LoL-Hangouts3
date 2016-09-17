@@ -1,6 +1,7 @@
 package riotapi
 
 import cats.data._
+import lolchat.data.{AsyncResult, Region}
 import riotapi.models._
 import riotapi.utils.Parsing._
 

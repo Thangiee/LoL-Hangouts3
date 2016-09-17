@@ -2,7 +2,8 @@ package com.thangiee.lolhangouts
 
 import java.net.{ConnectException, SocketTimeoutException}
 
-import cats.implicits.futureInstance
+import cats.instances.all._
+import cats.syntax.all._
 import lolchat.data.AsyncResult
 import play.api.libs.json.{Json, Reads, Writes}
 import share.Api
@@ -31,7 +32,7 @@ object ClientApi {
 
   implicit class AsyncCall[T](val api: Future[T]) extends AnyVal {
     def toAsyncResult = AsyncResult(
-      futureInstance.attempt(api).map(_.leftMap {
+      api.attempt.map(_.leftMap {
         case ex: ConnectException       => Error(408, "No Internet connection.", ex)
         case ex: SocketTimeoutException => Error(503, "Unable to connect to the server", ex)
         case ex                         => Error(500, "Unexpected Error occurred", ex)

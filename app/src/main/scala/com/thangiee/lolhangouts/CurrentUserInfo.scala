@@ -3,7 +3,7 @@ package com.thangiee.lolhangouts
 import lolchat._
 import lolchat.data._
 import lolchat.model.{Profile, Session}
-import riotapi.free.RiotApiOps
+import riotapi.RiotApiOps._
 import riotapi.models.Summoner
 import AuxFunctions._
 import boopickle.Default._
@@ -23,7 +23,7 @@ object CurrentUserInfo {
     }
 
     for {
-      summoner <- riotApi.run(RiotApiOps.summonerByName(sess.user), sess.region)
+      summoner <- riotApi.run(summonerByName(sess.user), sess.region)
       profile <- LoLChat.run(modifyProfile(setStatusMsg)(sess))
     } yield CurrentUserInfo(summoner, profile)
   }
