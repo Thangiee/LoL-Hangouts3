@@ -11,7 +11,7 @@ object Dependencies {
     "repo" at "http://dl.bintray.com/pixplicity/maven"
   )
 
-  val lolchatVer = "0.4.0"
+  val lolchatVer = "0.4.1"
   lazy val lolchat = Seq(
     "org.igniterealtime.smack" % "smack-android" % "4.1.7",
     "com.github.thangiee" %% "lol-chat-lib" % lolchatVer
@@ -52,7 +52,7 @@ object Dependencies {
     )
   }
 
-  lazy val freasyMonad = Seq("com.thangiee" %% "freasy-monad" % "0.2.0")
+  lazy val freasyMonad = Seq("com.thangiee" %% "freasy-monad" % "0.4.0")
 
   lazy val androidSupport = {
     val ver = "23.2.1"

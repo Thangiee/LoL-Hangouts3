@@ -2,7 +2,7 @@ package riotapi.free
 
 import cats.data.NonEmptyVector
 import cats.free.Free
-import freasymonad._
+import freasymonad.cats.free
 import riotapi.models._
 
 @free trait RiotApi {
